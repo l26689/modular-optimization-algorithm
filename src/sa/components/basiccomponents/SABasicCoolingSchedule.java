@@ -3,6 +3,7 @@ package sa.components.basiccomponents;
 import oa.examples.ContinuousProblem;
 import sa.core.SACoolingSchedule;
 import sa.core.SAState;
+import java.util.Random;
 
 public class SABasicCoolingSchedule extends SACoolingSchedule<double[],ContinuousProblem> {
     private double coolingRate;
@@ -16,7 +17,7 @@ public class SABasicCoolingSchedule extends SACoolingSchedule<double[],Continuou
     }
     
     @Override
-    public void init(ContinuousProblem problem) {
+    public void init(ContinuousProblem problem,Random random) {
         // 初始化操作
     }
     

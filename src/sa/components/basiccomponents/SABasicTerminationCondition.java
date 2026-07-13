@@ -3,6 +3,7 @@ package sa.components.basiccomponents;
 import oa.examples.ContinuousProblem;
 import sa.core.SATerminationCondition;
 import sa.core.SAState;
+import java.util.Random;
 
 public class SABasicTerminationCondition extends SATerminationCondition<double[],ContinuousProblem>{
     private int maxIterations;
@@ -14,7 +15,7 @@ public class SABasicTerminationCondition extends SATerminationCondition<double[]
     }
     
     @Override
-    public void init(ContinuousProblem problem) {
+    public void init(ContinuousProblem problem,Random random) {
     }
     
     @Override

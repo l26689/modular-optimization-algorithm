@@ -37,7 +37,7 @@ public class SimulatedAnnealing<X,Prob extends Problem<X>> {
     private SAPerturbation<X,Prob> perturbation;//扰动器
     private SACoolingSchedule<X,Prob> coolingSchedule;//冷却器
     private SATerminationCondition<X,Prob> terminationCondition;//终止条件
-    private Random random = new Random();//随机数生成器
+    private Random random;//随机数生成器，由外部或内部创建，统一注入到所有组件，确保随机性可复现
     private Prob problem;//优化问题
 
     /**
@@ -64,10 +64,30 @@ public class SimulatedAnnealing<X,Prob extends Problem<X>> {
             this.perturbation = perturbation;
             this.coolingSchedule = coolingSchedule;
             this.terminationCondition = terminationCondition;
-            initializer.init(problem);
-            perturbation.init(problem);
-            coolingSchedule.init(problem);
-            terminationCondition.init(problem);
+            this.random = new Random();
+            initializer.init(problem,random);
+            perturbation.init(problem,random);
+            coolingSchedule.init(problem,random);
+            terminationCondition.init(problem,random);
+        }
+
+    public SimulatedAnnealing(
+        Random random,
+        Prob problem ,
+        SAInitializer<X,Prob> initializer,
+        SAPerturbation<X,Prob> perturbation,
+        SACoolingSchedule<X,Prob> coolingSchedule,
+        SATerminationCondition<X,Prob> terminationCondition){
+            this.problem = problem;
+            this.initializer = initializer;
+            this.perturbation = perturbation;
+            this.coolingSchedule = coolingSchedule;
+            this.terminationCondition = terminationCondition;
+            this.random = random;
+            initializer.init(problem,random);
+            perturbation.init(problem,random);
+            coolingSchedule.init(problem,random);
+            terminationCondition.init(problem,random);
         }
 
     /**
@@ -93,6 +113,15 @@ public class SimulatedAnnealing<X,Prob extends Problem<X>> {
      * <h3>冷启动细节</h3>
      * 第一次迭代中，传递给各组件的 {@code isAccepted} 固定为 {@code false}。
      * 各组件（特别是扰动器和终止条件）需正确处理此初始状态。
+     *
+     * <h3>SAState 说明</h3>
+     * 算法通过 {@link SAState} 对象向组件传递状态信息，该对象封装了三个核心字段：
+     * <ul>
+     *   <li>{@code x} - 当前解</li>
+     *   <li>{@code temperature} - 当前系统温度</li>
+     *   <li>{@code isAccepted} - 上一轮迭代是否接受了新解</li>
+     * </ul>
+     * 组件应通过 {@code state.x()}、{@code state.temperature()}、{@code state.isAccepted()} 访问这些信息。
      *
      * <h3>线程安全</h3>
      * 本方法未做任何同步，默认在单线程下使用。如果在多线程环境中调用，

@@ -1,6 +1,7 @@
 package sa.core;
 
 import oa.Problem;
+import java.util.Random;
 
 /**
  * 终止条件，决定算法何时停止迭代。
@@ -36,21 +37,26 @@ public abstract class SATerminationCondition<X, Prob extends Problem<X>> {
      * 此方法由框架在构造阶段自动调用，使用者无需手动处理。
      *
      * @param problem 待求解问题
+     * @param random 随机数生成器，由主算法统一创建并注入，组件应使用此实例进行所有随机操作
+     *               （如基于概率的终止判断），以保证结果可复现；不应自行创建新的 {@link Random} 实例
      * @throws NullPointerException 如果 problem 为 null
      */
-    protected abstract void init(Prob problem);
+    protected abstract void init(Prob problem,Random random);
 
     /**
      * 判断算法是否应当终止。
      * <p>
      * 本方法在每次迭代结束时被调用一次（与冷却策略调用时机相同），
-     * 传入的 {@code isAccepted} 反映的是刚结束的本次迭代的接受结果，
-     * 其值始终真实（包括首次调用后的第一轮结果）。
-     * 首次调用时 {@code isAccepted} 为 {@code false}，表示“尚无历史”。
+     * 传入封装了当前迭代状态的 {@link SAState} 对象：
+     * <ul>
+     *   <li>{@code state.x()} - 当前解（只读，不可原地修改）</li>
+     *   <li>{@code state.temperature()} - 当前温度</li>
+     *   <li>{@code state.isAccepted()} - 刚结束的本次迭代的接受结果，
+     *       其值始终真实（包括首次调用后的第一轮结果）</li>
+     * </ul>
+     * 首次调用时 {@code state.isAccepted()} 为 {@code false}，表示"尚无历史"。
      *
-     * @param temperature 当前温度
-     * @param x           当前解（只读，不可原地修改）
-     * @param isAccepted  刚结束的本次迭代的接受结果；首次调用时为 {@code false}
+     * @param state 封装了当前迭代状态的 {@link SAState} 对象，包含当前解、温度和接受标志
      * @return {@code true} 表示满足终止条件，算法将停止；{@code false} 表示继续迭代
      */
     protected abstract boolean check(SAState<X> state);

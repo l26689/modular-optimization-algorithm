@@ -1,7 +1,6 @@
 package sa.components.basiccomponents;
 
 import java.util.Random;
-
 import oa.examples.ContinuousProblem;
 import sa.core.SAPerturbation;
 import sa.core.SAState;
@@ -11,19 +10,20 @@ public class SABasicPerturbation extends SAPerturbation<double[],ContinuousProbl
     private double[] lowerBounds;
     private double[] upperBounds;
     private ContinuousProblem problem;
+    private Random random;
     
     @Override
-    protected void init(ContinuousProblem problem) {
+    protected void init(ContinuousProblem problem,Random random) {
         this.lowerBounds = problem.getLowerBounds();
         this.upperBounds = problem.getUpperBounds();
         this.problem = problem;
+        this.random = random;
     }
     
     @Override
     protected double[] perturb(SAState<double[]> state) {
         double[] x = state.currentX();
         
-        Random random = new Random();
         double[] newX = problem.copyX(x);
         
         for(int i = 0; i < newX.length; i++) {

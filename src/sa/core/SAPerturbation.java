@@ -1,6 +1,7 @@
 package sa.core;
 
 import oa.Problem;
+import java.util.Random;
 
 /**
  * 扰动器，定义如何从当前解生成邻域候选解。
@@ -38,22 +39,25 @@ public abstract class SAPerturbation<X, Prob extends Problem<X>> {
      * 此方法由框架在构造阶段自动调用，使用者无需手动处理。
      *
      * @param problem 待求解问题
+     * @param random 随机数生成器，由主算法统一创建并注入，组件应使用此实例进行所有随机操作
+     *               （如生成随机扰动、随机选择维度等），以保证结果可复现；不应自行创建新的 {@link Random} 实例
      * @throws NullPointerException 如果 problem 为 null
      */
-    protected abstract void init(Prob problem);
+    protected abstract void init(Prob problem,Random random);
 
     /**
      * 生成当前解的一个邻域候选解。
      * <p>
-     * 算法每次迭代会调用本方法一次，传入当前系统温度、当前解以及
-     * 上一轮迭代的接受结果（{@code isAccepted}）。
-     * 首次调用时 {@code isAccepted} 为 {@code false}，
-     * 表示“尚无历史”，实现应使用默认扰动强度。
+     * 算法每次迭代会调用本方法一次，传入封装了当前迭代状态的 {@link SAState} 对象：
+     * <ul>
+     *   <li>{@code state.x()} - 当前解（只读，不可原地修改）</li>
+     *   <li>{@code state.temperature()} - 当前系统温度（可用于控制扰动幅度）</li>
+     *   <li>{@code state.isAccepted()} - 上一轮迭代的接受结果；首次迭代时为 {@code false}，
+     *       表示"尚无历史"，实现应使用默认扰动强度</li>
+     * </ul>
      *
-     * @param temperature 当前系统温度（可用于控制扰动幅度）
-     * @param x           当前解（只读，不可原地修改）
-     * @param isAccepted  上一次扰动是否被接受；首次迭代时为 {@code false}
-     * @return 全新的候选解，必须与 {@code x} 相互独立
+     * @param state 封装了当前迭代状态的 {@link SAState} 对象，包含当前解、温度和接受标志
+     * @return 全新的候选解，必须与 {@code state.x()} 相互独立
      */
     protected abstract X perturb(SAState<X> state);
 }

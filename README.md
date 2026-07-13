@@ -215,7 +215,7 @@ public class CachedMyProblem implements Problem<double[]> {
 }
 ```
 
-## ⚠️ 冷启动约定：首次调用组件时 isAccepted 为 false，且尚无历史迭代。
+## ⚠️ 冷启动约定：首次调用部分组件时 isAccepted 为 false，且尚无历史迭代。
 
 组件必须将此视为“无历史记录”，采用默认保守策略（例如固定步长、默认冷却因子）。
 

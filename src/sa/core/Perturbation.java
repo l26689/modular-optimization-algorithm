@@ -1,4 +1,4 @@
-package msa.core;
+package sa.core;
 
 /**
  * 扰动器，定义如何从当前解生成邻域候选解。

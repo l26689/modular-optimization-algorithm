@@ -1,4 +1,4 @@
-package msa.core;
+package sa.core;
 
 /**
  * 冷却调度策略，定义温度如何随迭代逐步降低。

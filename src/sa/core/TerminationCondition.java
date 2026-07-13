@@ -1,4 +1,4 @@
-package msa.core;
+package sa.core;
 
 /**
  * 终止条件，决定算法何时停止迭代。

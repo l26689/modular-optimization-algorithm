@@ -1,7 +1,7 @@
-package msa.components.basiccomponents;
+package sa.components.basiccomponents;
 
-import msa.core.TerminationCondition;
-import msa.examples.ContinuousProblem;
+import sa.core.TerminationCondition;
+import sa.examples.ContinuousProblem;
 
 public class BasicTerminationCondition extends TerminationCondition<double[],ContinuousProblem>{
     private int maxIterations;

@@ -1,9 +1,9 @@
-package msa.components.basiccomponents;
+package sa.components.basiccomponents;
 
 import java.util.Random;
 
-import msa.core.Initializer;
-import msa.examples.ContinuousProblem;
+import sa.core.Initializer;
+import sa.examples.ContinuousProblem;
 
 public class BasicInitializer extends Initializer<double[],ContinuousProblem> {
     private double initialTemp;

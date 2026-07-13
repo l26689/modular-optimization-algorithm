@@ -1,4 +1,4 @@
-package msa.core;
+package sa.core;
 
 /**
  * 初始化器，负责定义算法的起始状态：初始解和初始温度。

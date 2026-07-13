@@ -1,9 +1,9 @@
-package msa.components.basiccomponents;
+package sa.components.basiccomponents;
 
 import java.util.Random;
 
-import msa.core.Perturbation;
-import msa.examples.ContinuousProblem;
+import sa.core.Perturbation;
+import sa.examples.ContinuousProblem;
 
 public class BasicPerturbation extends Perturbation<double[],ContinuousProblem> {
 

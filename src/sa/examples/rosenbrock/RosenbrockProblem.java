@@ -1,6 +1,6 @@
-package msa.examples.rosenbrock;
+package sa.examples.rosenbrock;
 
-import msa.examples.ContinuousProblem;
+import sa.examples.ContinuousProblem;
 
 // Rosenbrock 函数：经典的非凸函数，又称“香蕉函数”
 // 公式：f(x) = Σ[100*(x_{i+1} - x_i²)² + (1 - x_i)²]

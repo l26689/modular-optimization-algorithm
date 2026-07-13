@@ -1,8 +1,8 @@
-package msa.examples.rosenbrock;
+package sa.examples.rosenbrock;
 
-import msa.core.ModularSimulatedAnnealing;
-import msa.examples.ContinuousProblem;
-import msa.components.basiccomponents.*;
+import sa.components.basiccomponents.*;
+import sa.core.ModularSimulatedAnnealing;
+import sa.examples.ContinuousProblem;
 
 public class RosenbrockDemo {
     void main() {

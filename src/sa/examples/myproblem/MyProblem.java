@@ -1,6 +1,6 @@
-package msa.examples.myproblem;
+package sa.examples.myproblem;
 
-import msa.examples.ContinuousProblem;
+import sa.examples.ContinuousProblem;
 
 public class MyProblem extends ContinuousProblem {
 

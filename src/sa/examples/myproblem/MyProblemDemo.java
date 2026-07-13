@@ -1,8 +1,8 @@
-package msa.examples.myproblem;
+package sa.examples.myproblem;
 
-import msa.components.basiccomponents.*;
-import msa.core.ModularSimulatedAnnealing;
-import msa.examples.ContinuousProblem;
+import sa.components.basiccomponents.*;
+import sa.core.ModularSimulatedAnnealing;
+import sa.examples.ContinuousProblem;
 
 public class MyProblemDemo {
     void main() {

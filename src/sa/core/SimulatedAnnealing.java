@@ -2,6 +2,8 @@ package sa.core;
 
 import java.util.Random;
 
+import oa.Problem;
+
 /**
  * 模块化模拟退火算法的主协调器。
  * <p>
@@ -30,11 +32,11 @@ import java.util.Random;
  * @param <X>    解的表示类型（例如 {@code double[]}、{@code int[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public class ModularSimulatedAnnealing<X,Prob extends Problem<X>> {
-    private Initializer<X,Prob> initializer;//初始化器
-    private Perturbation<X,Prob> perturbation;//扰动器
-    private CoolingSchedule<X,Prob> coolingSchedule;//冷却器
-    private TerminationCondition<X,Prob> terminationCondition;//终止条件
+public class SimulatedAnnealing<X,Prob extends Problem<X>> {
+    private SAInitializer<X,Prob> initializer;//初始化器
+    private SAPerturbation<X,Prob> perturbation;//扰动器
+    private SACoolingSchedule<X,Prob> coolingSchedule;//冷却器
+    private SATerminationCondition<X,Prob> terminationCondition;//终止条件
     private Random random = new Random();//随机数生成器
     private Prob problem;//优化问题
 
@@ -51,12 +53,12 @@ public class ModularSimulatedAnnealing<X,Prob extends Problem<X>> {
      * @param termination  终止条件，负责判断算法是否结束
      * @throws NullPointerException 如果任何参数为 {@code null}
      */
-    public ModularSimulatedAnnealing(
+    public SimulatedAnnealing(
         Prob problem ,
-        Initializer<X,Prob> initializer,
-        Perturbation<X,Prob> perturbation,
-        CoolingSchedule<X,Prob> coolingSchedule,
-        TerminationCondition<X,Prob> terminationCondition){
+        SAInitializer<X,Prob> initializer,
+        SAPerturbation<X,Prob> perturbation,
+        SACoolingSchedule<X,Prob> coolingSchedule,
+        SATerminationCondition<X,Prob> terminationCondition){
             this.problem = problem;
             this.initializer = initializer;
             this.perturbation = perturbation;
@@ -111,9 +113,9 @@ public class ModularSimulatedAnnealing<X,Prob extends Problem<X>> {
 
         boolean isAccepted = false;
 
-        while (!terminationCondition.check(temperature, currentX,isAccepted)) {
+        while (!terminationCondition.check(new SAState<X>(currentX,temperature,isAccepted))) {
             
-            newX = perturbation.perturb(temperature,currentX,isAccepted);
+            newX = perturbation.perturb(new SAState<X>(currentX,temperature,isAccepted));
 
             newValue = problem.evaluate(newX);
 
@@ -134,7 +136,7 @@ public class ModularSimulatedAnnealing<X,Prob extends Problem<X>> {
                     currentValue = newValue;
                 }
             }
-            temperature = coolingSchedule.cool(temperature,currentX,isAccepted);
+            temperature = coolingSchedule.cool(new SAState<X>(currentX,temperature,isAccepted));
         }
         
         return bestX;

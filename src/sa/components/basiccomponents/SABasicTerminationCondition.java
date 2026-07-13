@@ -1,13 +1,14 @@
 package sa.components.basiccomponents;
 
-import sa.core.TerminationCondition;
-import sa.examples.ContinuousProblem;
+import oa.examples.ContinuousProblem;
+import sa.core.SATerminationCondition;
+import sa.core.SAState;
 
-public class BasicTerminationCondition extends TerminationCondition<double[],ContinuousProblem>{
+public class SABasicTerminationCondition extends SATerminationCondition<double[],ContinuousProblem>{
     private int maxIterations;
     private int currentIteration;
     
-    public BasicTerminationCondition(int maxIterations) {
+    public SABasicTerminationCondition(int maxIterations) {
         this.maxIterations = maxIterations;
         this.currentIteration = 0;
     }
@@ -17,7 +18,7 @@ public class BasicTerminationCondition extends TerminationCondition<double[],Con
     }
     
     @Override
-    public boolean check(double temperature, double[] x,boolean isAccepted) {
+    public boolean check(SAState<double[]> state) {
         currentIteration++;
         return currentIteration > maxIterations;
     }

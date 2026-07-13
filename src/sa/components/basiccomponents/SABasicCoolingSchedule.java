@@ -1,14 +1,15 @@
 package sa.components.basiccomponents;
 
-import sa.core.CoolingSchedule;
-import sa.examples.ContinuousProblem;
+import oa.examples.ContinuousProblem;
+import sa.core.SACoolingSchedule;
+import sa.core.SAState;
 
-public class BasicCoolingSchedule extends CoolingSchedule<double[],ContinuousProblem> {
+public class SABasicCoolingSchedule extends SACoolingSchedule<double[],ContinuousProblem> {
     private double coolingRate;
     private int currentIteration;
     private int maxIterations;
     
-    public BasicCoolingSchedule(double coolingRate, int maxIterations) {
+    public SABasicCoolingSchedule(double coolingRate, int maxIterations) {
         this.coolingRate = coolingRate;
         this.maxIterations = maxIterations;
         this.currentIteration = 0;
@@ -20,7 +21,8 @@ public class BasicCoolingSchedule extends CoolingSchedule<double[],ContinuousPro
     }
     
     @Override
-    public double cool(double temperature, double[] x,boolean isAccepted) {
+    public double cool(SAState<double[]> state) {
+        double temperature = state.temperature();
         currentIteration++;
         if(currentIteration > maxIterations) {
             currentIteration = 0;

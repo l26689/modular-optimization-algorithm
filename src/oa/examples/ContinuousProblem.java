@@ -1,6 +1,6 @@
-package sa.examples;
+package oa.examples;
 
-import sa.core.Problem;
+import oa.Problem;
 
 public abstract class ContinuousProblem implements Problem<double[]>{
     protected double[] lowerBounds;

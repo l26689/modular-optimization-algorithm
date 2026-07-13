@@ -2,16 +2,16 @@ package sa.components.basiccomponents;
 
 import java.util.Random;
 
-import sa.core.Initializer;
-import sa.examples.ContinuousProblem;
+import oa.examples.ContinuousProblem;
+import sa.core.SAInitializer;
 
-public class BasicInitializer extends Initializer<double[],ContinuousProblem> {
+public class SABasicInitializer extends SAInitializer<double[],ContinuousProblem> {
     private double initialTemp;
     private int dim;
     private double[] lowerBounds;
     private double[] upperBounds;
     
-    public BasicInitializer(double initialTemp) {
+    public SABasicInitializer(double initialTemp) {
         this.initialTemp = initialTemp;
     }
     

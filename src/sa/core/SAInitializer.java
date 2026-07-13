@@ -1,5 +1,7 @@
 package sa.core;
 
+import oa.Problem;
+
 /**
  * 初始化器，负责定义算法的起始状态：初始解和初始温度。
  * <p>
@@ -21,7 +23,7 @@ package sa.core;
  * @param <X>   解的表示类型（例如 {@code double[]}、{@code int[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class Initializer<X, Prob extends Problem<X>> {
+public abstract class SAInitializer<X, Prob extends Problem<X>> {
 
     /**
      * 绑定具体问题实例，使初始化器能访问问题的维度和边界等信息。

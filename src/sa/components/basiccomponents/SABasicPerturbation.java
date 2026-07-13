@@ -2,24 +2,29 @@ package sa.components.basiccomponents;
 
 import java.util.Random;
 
-import sa.core.Perturbation;
-import sa.examples.ContinuousProblem;
+import oa.examples.ContinuousProblem;
+import sa.core.SAPerturbation;
+import sa.core.SAState;
 
-public class BasicPerturbation extends Perturbation<double[],ContinuousProblem> {
+public class SABasicPerturbation extends SAPerturbation<double[],ContinuousProblem> {
 
     private double[] lowerBounds;
     private double[] upperBounds;
+    private ContinuousProblem problem;
     
     @Override
     protected void init(ContinuousProblem problem) {
         this.lowerBounds = problem.getLowerBounds();
         this.upperBounds = problem.getUpperBounds();
+        this.problem = problem;
     }
     
     @Override
-    protected double[] perturb(double temperature, double[] x,boolean isAccepted) {
+    protected double[] perturb(SAState<double[]> state) {
+        double[] x = state.currentX();
+        
         Random random = new Random();
-        double[] newX = x.clone();
+        double[] newX = problem.copyX(x);
         
         for(int i = 0; i < newX.length; i++) {
             double delta = (upperBounds[i] - lowerBounds[i]) * 0.1;

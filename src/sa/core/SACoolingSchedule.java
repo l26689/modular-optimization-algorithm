@@ -1,5 +1,7 @@
 package sa.core;
 
+import oa.Problem;
+
 /**
  * 冷却调度策略，定义温度如何随迭代逐步降低。
  * <p>
@@ -16,7 +18,7 @@ package sa.core;
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class CoolingSchedule<X, Prob extends Problem<X>> {
+public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
 
     /**
      * 绑定问题实例，使冷却策略可获取问题的维度等元数据（多数冷却策略无需此信息，
@@ -46,5 +48,5 @@ public abstract class CoolingSchedule<X, Prob extends Problem<X>> {
      * @param isAccepted  刚结束的本次迭代的接受结果
      * @return 新的温度值，其合理性由实现类自行保证
      */
-    protected abstract double cool(double temperature, X x, boolean isAccepted);
+    protected abstract double cool(SAState<X> state);
 }

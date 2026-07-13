@@ -1,5 +1,7 @@
 package sa.core;
 
+import oa.Problem;
+
 /**
  * 扰动器，定义如何从当前解生成邻域候选解。
  * <p>
@@ -28,7 +30,7 @@ package sa.core;
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class Perturbation<X, Prob extends Problem<X>> {
+public abstract class SAPerturbation<X, Prob extends Problem<X>> {
 
     /**
      * 绑定问题实例，使扰动器获取问题的维度、边界等元数据。
@@ -53,5 +55,5 @@ public abstract class Perturbation<X, Prob extends Problem<X>> {
      * @param isAccepted  上一次扰动是否被接受；首次迭代时为 {@code false}
      * @return 全新的候选解，必须与 {@code x} 相互独立
      */
-    protected abstract X perturb(double temperature, X x, boolean isAccepted);
+    protected abstract X perturb(SAState<X> state);
 }

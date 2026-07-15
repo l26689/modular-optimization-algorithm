@@ -1,6 +1,6 @@
-package oa.examples.myproblem;
+package oa.examples.continuousproblem.myproblem;
 
-import oa.examples.ContinuousProblem;
+import oa.examples.continuousproblem.ContinuousProblem;
 
 public class MyProblem extends ContinuousProblem {
 
@@ -28,11 +28,5 @@ public class MyProblem extends ContinuousProblem {
     @Override
     public double[] copyX(double[] x) {
         return x.clone();
-    }
-
-    private static double[] createBounds(int dim, double value) {
-        double[] bounds = new double[dim];
-        java.util.Arrays.fill(bounds, value);
-        return bounds;
     }
 }

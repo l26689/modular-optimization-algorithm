@@ -1,6 +1,6 @@
-package oa.examples.rosenbrock;
+package oa.examples.continuousproblem.rosenbrock;
 
-import oa.examples.ContinuousProblem;
+import oa.examples.continuousproblem.ContinuousProblem;
 import sa.components.basiccomponents.*;
 import sa.core.SimulatedAnnealing;
 

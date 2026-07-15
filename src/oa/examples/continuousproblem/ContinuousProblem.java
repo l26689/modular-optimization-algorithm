@@ -1,4 +1,4 @@
-package oa.examples;
+package oa.examples.continuousproblem;
 
 import oa.Problem;
 
@@ -19,4 +19,9 @@ public abstract class ContinuousProblem implements Problem<double[]>{
     public double[] getLowerBounds() { return lowerBounds.clone();}
     public double[] getUpperBounds() { return upperBounds.clone();}
     public double[] copyX(double[] x) { return x.clone();}
+    protected static double[] createBounds(int dim, double value) {
+        double[] bounds = new double[dim];
+        java.util.Arrays.fill(bounds, value);
+        return bounds;
+    }
 }

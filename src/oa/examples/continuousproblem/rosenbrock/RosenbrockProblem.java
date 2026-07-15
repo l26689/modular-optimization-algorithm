@@ -1,6 +1,6 @@
-package oa.examples.rosenbrock;
+package oa.examples.continuousproblem.rosenbrock;
 
-import oa.examples.ContinuousProblem;
+import oa.examples.continuousproblem.ContinuousProblem;
 
 // Rosenbrock 函数：经典的非凸函数，又称“香蕉函数”
 // 公式：f(x) = Σ[100*(x_{i+1} - x_i²)² + (1 - x_i)²]
@@ -21,11 +21,5 @@ public class RosenbrockProblem extends ContinuousProblem {
             sum += 100.0 * a * a + b * b;
         }
         return sum;
-    }
-
-    private static double[] createBounds(int dim, double value) {
-        double[] bounds = new double[dim];
-        java.util.Arrays.fill(bounds, value);
-        return bounds;
     }
 }

@@ -1,9 +1,10 @@
 package sa.components.basiccomponents;
 
-import oa.examples.ContinuousProblem;
 import sa.core.SATerminationCondition;
 import sa.core.SAState;
 import java.util.Random;
+
+import oa.examples.continuousproblem.ContinuousProblem;
 
 public class SABasicTerminationCondition extends SATerminationCondition<double[],ContinuousProblem>{
     private int maxIterations;

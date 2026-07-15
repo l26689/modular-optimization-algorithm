@@ -2,7 +2,7 @@ package sa.components.basiccomponents;
 
 import java.util.Random;
 
-import oa.examples.ContinuousProblem;
+import oa.examples.continuousproblem.ContinuousProblem;
 import sa.core.SAInitializer;
 
 public class SABasicInitializer extends SAInitializer<double[],ContinuousProblem> {

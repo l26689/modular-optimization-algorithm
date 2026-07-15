@@ -1,7 +1,8 @@
 package sa.components.basiccomponents;
 
 import java.util.Random;
-import oa.examples.ContinuousProblem;
+
+import oa.examples.continuousproblem.ContinuousProblem;
 import sa.core.SAPerturbation;
 import sa.core.SAState;
 

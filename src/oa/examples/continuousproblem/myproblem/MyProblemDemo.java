@@ -1,6 +1,6 @@
-package oa.examples.myproblem;
+package oa.examples.continuousproblem.myproblem;
 
-import oa.examples.ContinuousProblem;
+import oa.examples.continuousproblem.ContinuousProblem;
 import sa.components.basiccomponents.*;
 import sa.core.SimulatedAnnealing;
 

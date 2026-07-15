@@ -1,9 +1,10 @@
 package sa.components.basiccomponents;
 
-import oa.examples.ContinuousProblem;
 import sa.core.SACoolingSchedule;
 import sa.core.SAState;
 import java.util.Random;
+
+import oa.examples.continuousproblem.ContinuousProblem;
 
 public class SABasicCoolingSchedule extends SACoolingSchedule<double[],ContinuousProblem> {
     private double coolingRate;

@@ -3,6 +3,7 @@ package sa.core;
 import java.util.Random;
 
 import oa.Problem;
+import oa.OptimizationAlgorithm;
 
 /**
  * 模块化模拟退火算法的主协调器。
@@ -32,13 +33,12 @@ import oa.Problem;
  * @param <X>    解的表示类型（例如 {@code double[]}、{@code int[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public class SimulatedAnnealing<X,Prob extends Problem<X>> {
+public class SimulatedAnnealing<X,Prob extends Problem<X>> extends OptimizationAlgorithm<X,Prob> {
     private SAInitializer<X,Prob> initializer;//初始化器
     private SAPerturbation<X,Prob> perturbation;//扰动器
     private SACoolingSchedule<X,Prob> coolingSchedule;//冷却器
     private SATerminationCondition<X,Prob> terminationCondition;//终止条件
     private Random random;//随机数生成器，由外部或内部创建，统一注入到所有组件，确保随机性可复现
-    private Prob problem;//优化问题
 
     /**
      * 构造一个完全组装的模拟退火实例。
@@ -129,6 +129,7 @@ public class SimulatedAnnealing<X,Prob extends Problem<X>> {
      *
      * @return 优化过程中发现的最优解（独立拷贝，调用者可安全修改）
      */
+    @Override
     public X solve(){
         double temperature= initializer.initialTemperature();
         X currentX = initializer.initialX();

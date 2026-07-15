@@ -28,37 +28,58 @@ import oa.OptimizationAlgorithm;
  *
  * <h3>冷启动</h3>
  * 首次迭代前 {@code isAccepted} 被初始化为 {@code false}，
- * 所有组件必须能正确处理这种“无历史”状态（详见各组件文档）。
+ * 所有组件必须能正确处理这种"无历史"状态（详见各组件文档）。
+ *
+ * <h3>组件类型的通配符设计</h3>
+ * 构造函数接受 {@code SA*<X, ? super Prob>} 而非精确的 {@code SA*<X, Prob>}，
+ * 使用下界通配符（{@code ? super Prob}）放宽了对组件问题类型的要求。
+ * 这意味着：一个声明为 {@code SATerminationCondition<double[], Problem<double[]>>}
+ * 的通用终止条件，可以被传入 {@code SimulatedAnnealing<double[], ContinuousProblem>}
+ * 的构造函数——因为 {@code Problem<double[]>} 是 {@code ContinuousProblem} 的父类型。
+ * <p>
+ * 此设计遵循 PECS 原则（Producer Extends, Consumer Super）：
+ * 主算法通过 {@code init(Prob, Random)} 向组件"写入"问题实例，
+ * 因此使用 {@code ? super Prob}（消费者需要下界通配符）。
+ * 不依赖问题特有方法（如 {@code getDimension()}）的组件可以用更泛化的
+ * {@code Prob} 参数声明，实现跨问题类型的复用。
  *
  * @param <X>    解的表示类型（例如 {@code double[]}、{@code int[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
 public class SimulatedAnnealing<X,Prob extends Problem<X>> extends OptimizationAlgorithm<X,Prob> {
-    private SAInitializer<X,Prob> initializer;//初始化器
-    private SAPerturbation<X,Prob> perturbation;//扰动器
-    private SACoolingSchedule<X,Prob> coolingSchedule;//冷却器
-    private SATerminationCondition<X,Prob> terminationCondition;//终止条件
+    private SAInitializer<X,? super Prob> initializer;//初始化器
+    private SAPerturbation<X,? super Prob> perturbation;//扰动器
+    private SACoolingSchedule<X,? super Prob> coolingSchedule;//冷却器
+    private SATerminationCondition<X,? super Prob> terminationCondition;//终止条件
     private Random random;//随机数生成器，由外部或内部创建，统一注入到所有组件，确保随机性可复现
 
     /**
      * 构造一个完全组装的模拟退火实例。
      * <p>
-     * 构造函数内部会调用各组件（扰动器、冷却、终止条件）的 {@code init(problem)}
+     * 构造函数内部会调用各组件的 {@code init(problem, random)}
      * 完成问题绑定，因此传入的组件无需在外部预先调用 {@code init}。
      *
-     * @param problem      待优化问题，不为 {@code null}
-     * @param initializer  初始化器，负责生成初始解和初始温度
-     * @param perturbation 扰动器，负责生成邻域候选解
-     * @param cooling      冷却调度，负责更新温度
-     * @param termination  终止条件，负责判断算法是否结束
+     * <h3>通配符类型参数</h3>
+     * 四个组件参数均声明为 {@code ? super Prob}（下界通配符），
+     * 允许组件使用比 {@code Prob} 更泛化的问题类型声明。
+     * 例如，一个不依赖 {@code ContinuousProblem} 特有方法的终止条件
+     * 可以声明为 {@code SATerminationCondition<double[], Problem<double[]>>}，
+     * 仍能传入 {@code SimulatedAnnealing<double[], ContinuousProblem>} 的构造函数。
+     * 这种设计提升了组件的跨领域复用性。
+     *
+     * @param problem              待优化问题，不为 {@code null}
+     * @param initializer          初始化器，负责生成初始解和初始温度
+     * @param perturbation         扰动器，负责生成邻域候选解
+     * @param coolingSchedule      冷却调度，负责更新温度
+     * @param terminationCondition 终止条件，负责判断算法是否结束
      * @throws NullPointerException 如果任何参数为 {@code null}
      */
     public SimulatedAnnealing(
         Prob problem ,
-        SAInitializer<X,Prob> initializer,
-        SAPerturbation<X,Prob> perturbation,
-        SACoolingSchedule<X,Prob> coolingSchedule,
-        SATerminationCondition<X,Prob> terminationCondition){
+        SAInitializer<X,? super Prob> initializer,
+        SAPerturbation<X,? super Prob> perturbation,
+        SACoolingSchedule<X,? super Prob> coolingSchedule,
+        SATerminationCondition<X,? super Prob> terminationCondition){
             this.problem = problem;
             this.initializer = initializer;
             this.perturbation = perturbation;
@@ -74,10 +95,10 @@ public class SimulatedAnnealing<X,Prob extends Problem<X>> extends OptimizationA
     public SimulatedAnnealing(
         Random random,
         Prob problem ,
-        SAInitializer<X,Prob> initializer,
-        SAPerturbation<X,Prob> perturbation,
-        SACoolingSchedule<X,Prob> coolingSchedule,
-        SATerminationCondition<X,Prob> terminationCondition){
+        SAInitializer<X,? super Prob> initializer,
+        SAPerturbation<X,? super Prob> perturbation,
+        SACoolingSchedule<X,? super Prob> coolingSchedule,
+        SATerminationCondition<X,? super Prob> terminationCondition){
             this.problem = problem;
             this.initializer = initializer;
             this.perturbation = perturbation;
@@ -117,11 +138,11 @@ public class SimulatedAnnealing<X,Prob extends Problem<X>> extends OptimizationA
      * <h3>SAState 说明</h3>
      * 算法通过 {@link SAState} 对象向组件传递状态信息，该对象封装了三个核心字段：
      * <ul>
-     *   <li>{@code x} - 当前解</li>
+     *   <li>{@code currentX} - 当前解</li>
      *   <li>{@code temperature} - 当前系统温度</li>
      *   <li>{@code isAccepted} - 上一轮迭代是否接受了新解</li>
      * </ul>
-     * 组件应通过 {@code state.x()}、{@code state.temperature()}、{@code state.isAccepted()} 访问这些信息。
+     * 组件应通过 {@code state.currentX()}、{@code state.temperature()}、{@code state.isAccepted()} 访问这些信息。
      *
      * <h3>线程安全</h3>
      * 本方法未做任何同步，默认在单线程下使用。如果在多线程环境中调用，

@@ -16,6 +16,13 @@ import java.util.Random;
  * 目标函数值、改进幅度等冗余数据不在参数中，若需要可自行通过持有的
  * {@link Problem#evaluate} 获取。
  *
+ * <h3>通配符兼容性</h3>
+ * {@link SimulatedAnnealing} 构造函数以 {@code SACoolingSchedule<X, ? super Prob>}
+ * 的形式接收本组件（下界通配符）。这意味着实现类可以将 {@code Prob} 声明为
+ * 比实际使用的问题类型更泛化的父类型。冷却策略通常不依赖问题特有方法，
+ * 因此可以直接声明为 {@code SACoolingSchedule<double[], Problem<double[]>>}，
+ * 实现跨问题类型的复用。
+ *
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
@@ -40,7 +47,7 @@ public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
      * 本方法每次迭代后调用一次，调用次数等于算法总迭代次数（非传统意义上的外循环）。
      * 传入的 {@link SAState} 封装了当前迭代的关键状态信息：
      * <ul>
-     *   <li>{@code state.x()} - 当前解（只读，不可原地修改）</li>
+     *   <li>{@code state.currentX()} - 当前解（只读，不可原地修改）</li>
      *   <li>{@code state.temperature()} - 当前温度</li>
      *   <li>{@code state.isAccepted()} - 刚结束的本次迭代的接受结果，其值始终真实
      *       （包括首次调用时），实现可直接据此调整温度。</li>

@@ -11,7 +11,7 @@ import java.util.Random;
  * 连续若干次未接受新解（停滞）等。
  *
  * <h3>冷启动约定</h3>
- * 首次调用 {@link #check(double, Object, boolean)} 时，
+ * 首次调用 {@link #check(SAState)} 时，
  * {@code isAccepted} 固定为 {@code false}。这并非一次真实的接受事件，
  * 仅表示“尚无历史”。实现类应将此视为冷启动信号，使用默认判断逻辑，
  * 不应依赖该标志决定是否终止。
@@ -22,8 +22,16 @@ import java.util.Random;
  * 可在类内部维护私有计数器，通过本方法的调用次数自行推导。
  *
  * <h3>实现自由</h3>
- * 本接口不对“终止”的语义做任何硬性约束。实现类可以基于温度、解的质量、
+ * 本接口不对"终止"的语义做任何硬性约束。实现类可以基于温度、解的质量、
  * 搜索历史等任意标准组合来决定是否停止，框架仅要求返回 {@code true} 时结束循环。
+ *
+ * <h3>通配符兼容性</h3>
+ * {@link SimulatedAnnealing} 构造函数以 {@code SATerminationCondition<X, ? super Prob>}
+ * 的形式接收本组件（下界通配符）。这意味着实现类可以将 {@code Prob} 声明为
+ * 比实际使用的问题类型更泛化的父类型。终止条件通常仅依赖迭代计数或温度，
+ * 不涉及问题特有方法，因此可以直接声明为
+ * {@code SATerminationCondition<double[], Problem<double[]>>}，
+ * 实现跨问题类型的复用。
  *
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
@@ -49,7 +57,7 @@ public abstract class SATerminationCondition<X, Prob extends Problem<X>> {
      * 本方法在每次迭代结束时被调用一次（与冷却策略调用时机相同），
      * 传入封装了当前迭代状态的 {@link SAState} 对象：
      * <ul>
-     *   <li>{@code state.x()} - 当前解（只读，不可原地修改）</li>
+     *   <li>{@code state.currentX()} - 当前解（只读，不可原地修改）</li>
      *   <li>{@code state.temperature()} - 当前温度</li>
      *   <li>{@code state.isAccepted()} - 刚结束的本次迭代的接受结果，
      *       其值始终真实（包括首次调用后的第一轮结果）</li>

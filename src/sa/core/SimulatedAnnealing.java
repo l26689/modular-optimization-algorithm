@@ -2,8 +2,8 @@ package sa.core;
 
 import java.util.Random;
 
-import oa.Problem;
-import oa.OptimizationAlgorithm;
+import oa.core.OptimizationAlgorithm;
+import oa.core.Problem;
 
 /**
  * 模块化模拟退火算法的主协调器。
@@ -162,6 +162,13 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
      * （例如避免在平坦区域停滞），需在 {@code compare} 实现中将等优映射为小正值
      * 而非零，使接受概率略低于 1。这与当前框架的偏序设计完全兼容。
      *
+     * <h3>Recorder 记录策略</h3>
+     * 模拟退火的 {@link oa.core.Recorder} 遵循<b>仅记录被接受解</b>的策略：
+     * 每轮迭代中，只有当候选解被接受（无论是因更优而确定性接受，还是因 Metropolis
+     * 准则而概率性接受）时，才会调用 {@code recorder.record(newX, newValue)}。
+     * 被拒绝的候选解不会触发记录。这一策略确保记录的历史序列完整反映了
+     * 算法在解空间中的实际搜索轨迹（即马尔可夫链的每一步状态）。
+     *
      * <h3>冷启动细节</h3>
      * 第一次迭代中，传递给各组件的 {@code isAccepted} 固定为 {@code false}。
      * 各组件（特别是扰动器和终止条件）需正确处理此初始状态。
@@ -182,7 +189,7 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
      * @return 优化过程中发现的最优解（独立拷贝，调用者可安全修改）
      */
     @Override
-    public void solve(){
+    public void solve(Recorder<X,Y> recorder){
         double temperature= initializer.initialTemperature();
         X currentX = initializer.initialX();
         Y currentValue = problem.evaluate(currentX);
@@ -202,8 +209,9 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
             if(isAccepted){
                 currentX = newX;
                 currentValue = newValue;
+                recorder.record(currentX,currentValue);
             }
-
+            
             temperature = coolingSchedule.cool(new SAState<X>(currentX,temperature,isAccepted));
         }
     }

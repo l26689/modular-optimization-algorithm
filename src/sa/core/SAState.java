@@ -1,6 +1,6 @@
 package sa.core;
 
-import oa.State;
+import oa.core.State;
 
 /**
  * 模拟退算法的迭代状态封装。

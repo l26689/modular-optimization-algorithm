@@ -1,4 +1,4 @@
-package oa;
+package oa.core;
 
 /**
  * 优化算法的抽象基类。
@@ -28,5 +28,5 @@ public abstract class OptimizationAlgorithm<X,Y, Prob extends Problem<X,Y>> {
      *
      * @return 优化过程中发现的最优解（独立拷贝）
      */
-    public abstract void solve();
+    public abstract void solve(Recorder<X,Y> recorder);
 }

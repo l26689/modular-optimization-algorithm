@@ -1,7 +1,8 @@
 package sa.core;
 
-import oa.Problem;
 import java.util.Random;
+
+import oa.core.Problem;
 
 /**
  * 扰动器，定义如何从当前解生成邻域候选解。

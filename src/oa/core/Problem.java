@@ -1,4 +1,4 @@
-package oa;
+package oa.core;
 
 /**
  * 优化问题的抽象契约，负责评价解的质量。

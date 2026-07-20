@@ -1,7 +1,8 @@
 package sa.core;
 
-import oa.Problem;
 import java.util.Random;
+
+import oa.core.Problem;
 
 /**
  * 终止条件，决定算法何时停止迭代。

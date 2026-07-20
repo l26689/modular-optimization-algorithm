@@ -2,7 +2,7 @@ package pso.core;
 
 import java.util.Collection;
 
-import oa.core.State;
+import oa.api.State;
 
 class PSOState<X> extends State<Collection<X>> {
 

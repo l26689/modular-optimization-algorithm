@@ -31,7 +31,7 @@ package oa.api;
  * 如果需要在不同问题之间切换，应重新构造组件实例并调用 {@code init}，
  * 而非仅依赖 {@code reset}。
  *
- * @see oa.core.Recorder
+ * @see oa.api.Recorder
  * @see sa.core.SATerminationCondition
  */
 public interface Reusable {

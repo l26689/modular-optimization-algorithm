@@ -1,4 +1,4 @@
-package oa.core;
+package oa.api;
 
 /**
  * 优化算法迭代状态的基类封装。

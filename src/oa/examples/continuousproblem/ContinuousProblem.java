@@ -1,6 +1,6 @@
 package oa.examples.continuousproblem;
 
-import oa.core.Problem;
+import oa.api.Problem;
 
 public abstract class ContinuousProblem implements Problem<double[],Double>{
     protected double[] lowerBounds;

@@ -1,4 +1,4 @@
-package oa.core;
+package oa.api;
 
 /**
  * 优化算法的抽象基类。

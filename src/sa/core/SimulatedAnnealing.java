@@ -2,9 +2,9 @@ package sa.core;
 
 import java.util.Random;
 
-import oa.core.OptimizationAlgorithm;
-import oa.core.Problem;
-import oa.core.Recorder;
+import oa.api.OptimizationAlgorithm;
+import oa.api.Problem;
+import oa.api.Recorder;
 
 /**
  * 模块化模拟退火算法的主协调器。
@@ -164,7 +164,7 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
      * 而非零，使接受概率略低于 1。这与当前框架的偏序设计完全兼容。
      *
      * <h3>Recorder 记录策略</h3>
-     * 模拟退火的 {@link oa.core.Recorder} 遵循<b>仅记录被接受解</b>的策略：
+     * 模拟退火的 {@link oa.api.Recorder} 遵循<b>仅记录被接受解</b>的策略：
      * 每轮迭代中，只有当候选解被接受（无论是因更优而确定性接受，还是因 Metropolis
      * 准则而概率性接受）时，才会调用 {@code recorder.record(newX, newValue)}。
      * 被拒绝的候选解不会触发记录。这一策略确保记录的历史序列完整反映了

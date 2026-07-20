@@ -1,4 +1,4 @@
-package oa.core;
+package oa.api;
 
 /**
  * 算法记录员，负责记录优化过程中算法找到的每一个解及其目标值。

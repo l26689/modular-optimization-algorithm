@@ -1,6 +1,6 @@
 package oa.examples.Recoders;
 
-import oa.core.Recorder;
+import oa.api.Recorder;
 
 
 public class LastRecorder<X,Y> implements Recorder<X,Y> {

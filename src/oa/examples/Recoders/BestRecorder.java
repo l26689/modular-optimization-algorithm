@@ -1,7 +1,7 @@
 package oa.examples.Recoders;
 
-import oa.core.Problem;
-import oa.core.Recorder;
+import oa.api.Problem;
+import oa.api.Recorder;
 
 public class BestRecorder<X,Y,Prob extends Problem<X,Y>> implements Recorder<X,Y> {
     private X bestX;

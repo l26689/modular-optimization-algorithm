@@ -2,7 +2,7 @@ package sa.core;
 
 import java.util.Random;
 
-import oa.core.Problem;
+import oa.api.Problem;
 
 /**
  * 初始化器，负责定义算法的起始状态：初始解和初始温度。

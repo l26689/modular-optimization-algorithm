@@ -2,7 +2,7 @@ package sa.core;
 
 import java.util.Random;
 
-import oa.core.Problem;
+import oa.api.Problem;
 
 /**
  * 冷却调度策略，定义温度如何随迭代逐步降低。

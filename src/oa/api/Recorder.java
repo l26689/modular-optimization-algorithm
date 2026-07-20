@@ -40,8 +40,9 @@ package oa.api;
  *
  * @param <X> 解的表示类型
  * @param <Y> 目标函数返回值的类型
+ * @param <Prob> 优化问题的类型，必须是 {@link Problem<X,Y>} 类的子类
  */
-abstract public interface Recorder<X,Y> {
+abstract public interface Recorder<X,Y,Prob extends Problem<X,Y>> {
     /**
      * 记录一个解及其对应的目标值。
      * <p>
@@ -49,7 +50,6 @@ abstract public interface Recorder<X,Y> {
      * 实现类应将传入数据以合适的方式持久化或展示。
 
      * @param x 被记录的解（只读，不可修改）
-     * @param y 该解对应的目标值（只读，不可修改）
      */
-    abstract public void record(X x,Y y);
+    abstract public void record(X x);
 }

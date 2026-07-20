@@ -14,8 +14,15 @@ import oa.api.Recorder;
  * <ol>
  *   <li>获取初始解与初始温度</li>
  *   <li>迭代：扰动 → 评估 → Metropolis 接受准则 → 冷却 → 检查终止</li>
- *   <li>返回搜索过程中发现的最优解</li>
+ *   <li>通过 {@link oa.api.Recorder} 输出优化结果</li>
  * </ol>
+ *
+ * <h3>问题类型绑定</h3>
+ * 与基类 {@link oa.api.OptimizationAlgorithm} 不同，本类在<b>类级别</b>仅声明
+ * {@code <X, Y>}，具体的 {@code Prob} 类型参数被推迟到<b>构造函数级别</b>声明。
+ * 这样设计的好处是：同一个 {@code SimulatedAnnealing<X, Y>} 实例在理论上可以
+ * 被不同类型的问题复用（配合 {@link oa.api.Reusable} 接口），
+ * 而无需在类声明时就将问题类型固化。
  *
  * <h3>最少信息原则</h3>
  * 本控制器仅向组件传递它们无法自行推导的原子事实：
@@ -32,11 +39,11 @@ import oa.api.Recorder;
  * 所有组件必须能正确处理这种"无历史"状态（详见各组件文档）。
  *
  * <h3>组件类型的通配符设计</h3>
- * 构造函数接受 {@code SA*<X, ? super Prob>} 而非精确的 {@code SA*<X, Prob>}，
+ * 构造函数接受 {@code SA*<X, Y, ? super Prob>} 而非精确的 {@code SA*<X, Y, Prob>}，
  * 使用下界通配符（{@code ? super Prob}）放宽了对组件问题类型的要求。
- * 这意味着：一个声明为 {@code SATerminationCondition<double[], Problem<double[]>>}
- * 的通用终止条件，可以被传入 {@code SimulatedAnnealing<double[], ContinuousProblem>}
- * 的构造函数——因为 {@code Problem<double[]>} 是 {@code ContinuousProblem} 的父类型。
+ * 这意味着：一个声明为 {@code SATerminationCondition<double[], Double, Problem<double[], Double>>}
+ * 的通用终止条件，可以被传入以 {@code ContinuousProblem} 构造的
+ * {@code SimulatedAnnealing}——因为 {@code Problem<double[], Double>} 是 {@code ContinuousProblem} 的父类型。
  * <p>
  * 此设计遵循 PECS 原则（Producer Extends, Consumer Super）：
  * 主算法通过 {@code init(Prob, Random)} 向组件"写入"问题实例，
@@ -44,18 +51,31 @@ import oa.api.Recorder;
  * 不依赖问题特有方法（如 {@code getDimension()}）的组件可以用更泛化的
  * {@code Prob} 参数声明，实现跨问题类型的复用。
  *
- * @param <X>    解的表示类型（例如 {@code double[]}、{@code int[]}）
- * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
+ * <h3>随机数生成器绑定</h3>
+ * 本类持有 {@link Random} 实例，并在构造函数中通过各组件的
+ * {@code init(Prob, Random)} 方法统一注入。注入的随机数生成器
+ * 在以下两个层面保证结果的可复现性：
+ * <ul>
+ *   <li><b>外部注入</b>：调用方可通过双参构造函数传入带固定种子的 {@code Random}，
+ *       使整个优化过程完全可复现（相同输入 → 相同输出）。</li>
+ *   <li><b>内部创建</b>：单参构造函数内部创建 {@code new Random()}，
+ *       适用于不需要精确复现的日常使用场景。</li>
+ * </ul>
+ * 所有组件（初始化器、扰动器、冷却策略、终止条件）共享同一 {@code Random} 实例，
+ * 组件内部不应再自行创建独立的随机数生成器，否则将破坏序列的可复现性。
+ *
+ * @param <X> 解的表示类型（例如 {@code double[]}、{@code int[]}）
+ * @param <Y> 目标函数返回值的类型（例如 {@code Double}、{@code double[]}）
  */
-public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends OptimizationAlgorithm<X,Y,Prob> {
-    private SAInitializer<X,Y,? super Prob> initializer;//初始化器
-    private SAPerturbation<X,Y,? super Prob> perturbation;//扰动器
-    private SACoolingSchedule<X,Y,? super Prob> coolingSchedule;//冷却器
-    private SATerminationCondition<X,Y,? super Prob> terminationCondition;//终止条件
+public class SimulatedAnnealing<X,Y> extends OptimizationAlgorithm<X,Y,Problem<X,Y>> {
+    private SAInitializer<X,Y,?> initializer;//初始化器
+    private SAPerturbation<X,Y,?> perturbation;//扰动器
+    private SACoolingSchedule<X,Y,?> coolingSchedule;//冷却器
+    private SATerminationCondition<X,Y,?> terminationCondition;//终止条件
     private Random random;//随机数生成器，由外部或内部创建，统一注入到所有组件，确保随机性可复现
 
     /**
-     * 构造一个完全组装的模拟退火实例。
+     * 构造一个完全组装的模拟退火实例，使用内部随机数生成器。
      * <p>
      * 构造函数内部会调用各组件的 {@code init(problem, random)}
      * 完成问题绑定，因此传入的组件无需在外部预先调用 {@code init}。
@@ -64,10 +84,16 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
      * 四个组件参数均声明为 {@code ? super Prob}（下界通配符），
      * 允许组件使用比 {@code Prob} 更泛化的问题类型声明。
      * 例如，一个不依赖 {@code ContinuousProblem} 特有方法的终止条件
-     * 可以声明为 {@code SATerminationCondition<double[], Problem<double[]>>}，
-     * 仍能传入 {@code SimulatedAnnealing<double[], ContinuousProblem>} 的构造函数。
+     * 可以声明为 {@code SATerminationCondition<double[], Double, Problem<double[], Double>>}，
+     * 仍能传入以 {@code ContinuousProblem} 构造的 {@code SimulatedAnnealing}。
      * 这种设计提升了组件的跨领域复用性。
      *
+     * <h3>随机数生成器</h3>
+     * 本构造函数内部创建 {@code new Random()} 并注入到所有组件。
+     * 如需可复现的优化结果，请使用双参构造函数并传入带固定种子的 {@link Random}。
+     *
+     * @param <Prob>              问题类型，必须实现 {@link Problem}{@code <X, Y>}；
+     *                            此泛型参数在构造函数级别声明，而非类级别
      * @param problem              待优化问题，不为 {@code null}
      * @param initializer          初始化器，负责生成初始解和初始温度
      * @param perturbation         扰动器，负责生成邻域候选解
@@ -75,7 +101,7 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
      * @param terminationCondition 终止条件，负责判断算法是否结束
      * @throws NullPointerException 如果任何参数为 {@code null}
      */
-    public SimulatedAnnealing(
+    public <Prob extends Problem<X,Y>>SimulatedAnnealing(
         Prob problem ,
         SAInitializer<X,Y,? super Prob> initializer,
         SAPerturbation<X,Y,? super Prob> perturbation,
@@ -93,7 +119,24 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
             terminationCondition.init(problem,random);
         }
 
-    public SimulatedAnnealing(
+    /**
+     * 构造一个完全组装的模拟退火实例，使用外部指定的随机数生成器。
+     * <p>
+     * 与单参构造函数功能相同，但允许调用方传入自定义的 {@link Random} 实例
+     * （例如带固定种子 {@code new Random(42)}），使优化过程完全可复现。
+     * 构造函数内部同样会调用各组件的 {@code init(problem, random)} 完成问题绑定。
+     *
+     * @param <Prob>              问题类型，必须实现 {@link Problem}{@code <X, Y>}；
+     *                            此泛型参数在构造函数级别声明，而非类级别
+     * @param random               随机数生成器，被注入到所有组件；传固定种子可实现结果复现
+     * @param problem              待优化问题，不为 {@code null}
+     * @param initializer          初始化器，负责生成初始解和初始温度
+     * @param perturbation         扰动器，负责生成邻域候选解
+     * @param coolingSchedule      冷却调度，负责更新温度
+     * @param terminationCondition 终止条件，负责判断算法是否结束
+     * @throws NullPointerException 如果任何参数为 {@code null}
+     */
+    public <Prob extends Problem<X,Y>>SimulatedAnnealing(
         Random random,
         Prob problem ,
         SAInitializer<X,Y,? super Prob> initializer,
@@ -113,24 +156,24 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
         }
 
     /**
-     * 启动模拟退火优化过程，返回搜索到的最优解。
+     * 启动模拟退火优化过程，通过 {@link Recorder} 输出优化结果。
      * <p>
      * 算法流程：
      * <ol>
      *   <li>调用初始化器获得初始解 {@code currentX} 和初始温度。</li>
-     *   <li>计算初始解的目标值，并将其记录为最优解。</li>
+     *   <li>计算初始解的目标值。</li>
      *   <li>在每一轮迭代中：
      *     <ul>
      *       <li>调用扰动器生成候选解 {@code newX}。</li>
      *       <li>评估候选解的目标值。</li>
      *       <li>通过 {@link Problem#compare} 统一计算 Metropolis 接受概率，
      *           不区分"更优/更差"分支（详见下方说明）。</li>
-     *       <li>更新最优解记录（若当前解被接受且优于历史最优）。</li>
+     *       <li>若候选解被接受，调用 {@code recorder.record(newX, newValue)} 记录。</li>
      *       <li>调用冷却策略降低温度。</li>
      *       <li>检查终止条件是否满足。</li>
      *     </ul>
      *   </li>
-     *   <li>返回优化过程中发现的最优解（深拷贝，安全独立）。</li>
+     *   <li>优化结果通过 {@code recorder} 对外提供（如 {@code recorder.getBestX()}）。</li>
      * </ol>
      *
      * <h3>compare 与 Metropolis 接受准则</h3>
@@ -187,10 +230,11 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
      * 本方法未做任何同步，默认在单线程下使用。如果在多线程环境中调用，
      * 需由外部保证互斥。
      *
-     * @return 优化过程中发现的最优解（独立拷贝，调用者可安全修改）
+     * @param recorder 记录器，负责接收每一个被接受的解及其目标值；
+     *                 优化结果通过 {@code recorder} 对外提供（如 {@code getBestX()}、{@code getHistory()} 等）
      */
     @Override
-    public void solve(Recorder<X,Y> recorder){
+    public void solve(Recorder<X,Y,Problem<X,Y>> recorder){
         double temperature= initializer.initialTemperature();
         X currentX = initializer.initialX();
         Y currentValue = problem.evaluate(currentX);
@@ -210,7 +254,7 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
             if(isAccepted){
                 currentX = newX;
                 currentValue = newValue;
-                recorder.record(currentX,currentValue);
+                recorder.record(currentX);
             }
             
             temperature = coolingSchedule.cool(new SAState<X>(currentX,temperature,isAccepted));

@@ -4,6 +4,7 @@ import java.util.Random;
 
 import oa.core.OptimizationAlgorithm;
 import oa.core.Problem;
+import oa.core.Recorder;
 
 /**
  * 模块化模拟退火算法的主协调器。
@@ -47,10 +48,10 @@ import oa.core.Problem;
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
 public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends OptimizationAlgorithm<X,Y,Prob> {
-    private SAInitializer<X,? super Prob> initializer;//初始化器
-    private SAPerturbation<X,? super Prob> perturbation;//扰动器
-    private SACoolingSchedule<X,? super Prob> coolingSchedule;//冷却器
-    private SATerminationCondition<X,? super Prob> terminationCondition;//终止条件
+    private SAInitializer<X,Y,? super Prob> initializer;//初始化器
+    private SAPerturbation<X,Y,? super Prob> perturbation;//扰动器
+    private SACoolingSchedule<X,Y,? super Prob> coolingSchedule;//冷却器
+    private SATerminationCondition<X,Y,? super Prob> terminationCondition;//终止条件
     private Random random;//随机数生成器，由外部或内部创建，统一注入到所有组件，确保随机性可复现
 
     /**
@@ -76,10 +77,10 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
      */
     public SimulatedAnnealing(
         Prob problem ,
-        SAInitializer<X,? super Prob> initializer,
-        SAPerturbation<X,? super Prob> perturbation,
-        SACoolingSchedule<X,? super Prob> coolingSchedule,
-        SATerminationCondition<X,? super Prob> terminationCondition){
+        SAInitializer<X,Y,? super Prob> initializer,
+        SAPerturbation<X,Y,? super Prob> perturbation,
+        SACoolingSchedule<X,Y,? super Prob> coolingSchedule,
+        SATerminationCondition<X,Y,? super Prob> terminationCondition){
             this.problem = problem;
             this.initializer = initializer;
             this.perturbation = perturbation;
@@ -95,10 +96,10 @@ public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends Optimizat
     public SimulatedAnnealing(
         Random random,
         Prob problem ,
-        SAInitializer<X,? super Prob> initializer,
-        SAPerturbation<X,? super Prob> perturbation,
-        SACoolingSchedule<X,? super Prob> coolingSchedule,
-        SATerminationCondition<X,? super Prob> terminationCondition){
+        SAInitializer<X,Y,? super Prob> initializer,
+        SAPerturbation<X,Y,? super Prob> perturbation,
+        SACoolingSchedule<X,Y,? super Prob> coolingSchedule,
+        SATerminationCondition<X,Y,? super Prob> terminationCondition){
             this.problem = problem;
             this.initializer = initializer;
             this.perturbation = perturbation;

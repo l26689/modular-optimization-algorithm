@@ -33,7 +33,7 @@ import oa.core.Problem;
  * @param <X>   解的表示类型（例如 {@code double[]}、{@code int[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class SAInitializer<X, Prob extends Problem<X>> {
+public abstract class SAInitializer<X,Y,Prob extends Problem<X,Y>> {
 
     /**
      * 绑定具体问题实例，使初始化器能访问问题的维度和边界等信息。

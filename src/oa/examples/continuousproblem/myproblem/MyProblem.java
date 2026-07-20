@@ -13,7 +13,7 @@ public class MyProblem extends ContinuousProblem {
      * 实现必须为纯函数（相同输入 -> 相同输出）。
      */
     @Override
-    public double evaluate(double[] x) {
+    public Double evaluate(double[] x) {
         double sum = 0.0;
         for (double v : x) {
             sum += v * v;   // 示例：简单的平方和函数

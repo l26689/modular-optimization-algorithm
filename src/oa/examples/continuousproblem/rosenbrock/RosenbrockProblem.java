@@ -13,7 +13,7 @@ public class RosenbrockProblem extends ContinuousProblem {
     }
 
     @Override
-    public double evaluate(double[] x) {
+    public Double evaluate(double[] x) {
         double sum = 0.0;
         for (int i = 0; i < x.length - 1; i++) {
             double a = x[i + 1] - x[i] * x[i];

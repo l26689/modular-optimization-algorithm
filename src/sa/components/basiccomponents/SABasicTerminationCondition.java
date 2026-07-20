@@ -6,7 +6,7 @@ import java.util.Random;
 
 import oa.examples.continuousproblem.ContinuousProblem;
 
-public class SABasicTerminationCondition extends SATerminationCondition<double[],ContinuousProblem>{
+public class SABasicTerminationCondition extends SATerminationCondition<double[],Double,ContinuousProblem>{
     private int maxIterations;
     private int currentIteration;
     

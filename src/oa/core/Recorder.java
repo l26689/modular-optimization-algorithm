@@ -25,10 +25,23 @@ package oa.core;
  *   <li>传入的 {@code x} 和 {@code y} 为只读引用，实现类不应修改它们。</li>
  * </ul>
  *
+ * <h3>获取优化结果</h3>
+ * 由于 {@code solve()} 方法不再返回优化结果（返回类型为 {@code void}），
+ * {@code Recorder} 的子类承担了<b>对外提供优化结果</b>的职责。
+ * 子类应至少提供以下能力之一：
+ * <ul>
+ *   <li>获取历史最优解及其目标值（如 {@code getBestX()}、{@code getBestY()}）</li>
+ *   <li>获取完整搜索历史（如 {@code getHistory()}，返回所有被记录的解）</li>
+ *   <li>获取当前解（如 {@code getCurrentX()}，用于实时监控搜索进度）</li>
+ * </ul>
+ * 具体方法签名由子类自行定义，本抽象类不强制统一接口——不同应用场景
+ * 对"结果"的定义差异很大（单目标只需最优值，多目标需要 Pareto 前沿，
+ * 调试场景需要完整轨迹），一刀切的抽象反而会限制灵活性。
+ *
  * @param <X> 解的表示类型
  * @param <Y> 目标函数返回值的类型
  */
-abstract public class Recorder<X,Y> {
+abstract public interface Recorder<X,Y> {
     /**
      * 记录一个解及其对应的目标值。
      * <p>

@@ -39,7 +39,7 @@ import oa.core.Problem;
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class SAPerturbation<X, Prob extends Problem<X>> {
+public abstract class SAPerturbation<X,Y, Prob extends Problem<X,Y>> {
 
     /**
      * 绑定问题实例，使扰动器获取问题的维度、边界等元数据。

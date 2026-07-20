@@ -46,7 +46,7 @@ import oa.OptimizationAlgorithm;
  * @param <X>    解的表示类型（例如 {@code double[]}、{@code int[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public class SimulatedAnnealing<X,Prob extends Problem<X>> extends OptimizationAlgorithm<X,Prob> {
+public class SimulatedAnnealing<X,Y,Prob extends Problem<X,Y>> extends OptimizationAlgorithm<X,Y,Prob> {
     private SAInitializer<X,? super Prob> initializer;//初始化器
     private SAPerturbation<X,? super Prob> perturbation;//扰动器
     private SACoolingSchedule<X,? super Prob> coolingSchedule;//冷却器
@@ -122,7 +122,8 @@ public class SimulatedAnnealing<X,Prob extends Problem<X>> extends OptimizationA
      *     <ul>
      *       <li>调用扰动器生成候选解 {@code newX}。</li>
      *       <li>评估候选解的目标值。</li>
-     *       <li>若候选解优于当前解，则无条件接受；否则根据 Metropolis 准则以概率接受。</li>
+     *       <li>通过 {@link Problem#compare} 统一计算 Metropolis 接受概率，
+     *           不区分"更优/更差"分支（详见下方说明）。</li>
      *       <li>更新最优解记录（若当前解被接受且优于历史最优）。</li>
      *       <li>调用冷却策略降低温度。</li>
      *       <li>检查终止条件是否满足。</li>
@@ -130,6 +131,36 @@ public class SimulatedAnnealing<X,Prob extends Problem<X>> extends OptimizationA
      *   </li>
      *   <li>返回优化过程中发现的最优解（深拷贝，安全独立）。</li>
      * </ol>
+     *
+     * <h3>compare 与 Metropolis 接受准则</h3>
+     * 本方法使用统一表达式计算接受概率，不显式分支：
+     * <pre>{@code
+     *   P = exp(problem.compare(newValue, currentValue) / temperature)
+     * }</pre>
+     * 其中 {@link Problem#compare} 定义的是<b>偏序关系</b>（partial order）：
+     * <ul>
+     *   <li>{@code compare(new, current) > 0} → 候选解优于当前解</li>
+     *   <li>{@code compare(new, current) < 0} → 候选解劣于当前解</li>
+     *   <li>{@code compare(new, current) = 0} → 两者等优 <b>或</b> 互不支配</li>
+     * </ul>
+     * 对应的接受行为：
+     * <ul>
+     *   <li>候选解更优时：{@code exp(正值 / T) > 1}，确定性接受（{@code random < P} 必然成立）</li>
+     *   <li>候选解更差时：{@code exp(负值 / T) ∈ (0, 1)}，以概率接受，差距越大概率越低</li>
+     *   <li>等优或不可比时：{@code exp(0) = 1}，确定性接受</li>
+     * </ul>
+     *
+     * <h3>设计意图：多目标优化中的充分探索</h3>
+     * 本方法刻意不将"候选解更优时无条件接受"作为显式分支写出，
+     * 而是依赖 {@code compare} 的符号语义自然达到同样效果。这一设计的核心原因在于
+     * <b>多目标优化</b>：当两个解互不支配时，{@code compare} 返回零，
+     * 接受概率为 {@code 1}，算法始终接受不可比的新解，从而在 Pareto 前沿上
+     * 进行充分的无偏随机游走，避免因人为偏好而遗漏前沿区域。
+     * <p>
+     * <b>单目标场景下的差异：</b>在全序关系中，{@code compare = 0} 仅表示等优，
+     * 确定性接受等优解不会引入额外开销。然而，若希望对等优解也施加 Metropolis 试探
+     * （例如避免在平坦区域停滞），需在 {@code compare} 实现中将等优映射为小正值
+     * 而非零，使接受概率略低于 1。这与当前框架的偏序设计完全兼容。
      *
      * <h3>冷启动细节</h3>
      * 第一次迭代中，传递给各组件的 {@code isAccepted} 固定为 {@code false}。
@@ -151,16 +182,13 @@ public class SimulatedAnnealing<X,Prob extends Problem<X>> extends OptimizationA
      * @return 优化过程中发现的最优解（独立拷贝，调用者可安全修改）
      */
     @Override
-    public X solve(){
+    public void solve(){
         double temperature= initializer.initialTemperature();
         X currentX = initializer.initialX();
-        double currentValue = problem.evaluate(currentX);
-
-        X bestX = problem.copyX(currentX);
-        double bestValue = currentValue;
+        Y currentValue = problem.evaluate(currentX);
 
         X newX = problem.copyX(currentX);
-        double newValue;
+        Y newValue;
 
         boolean isAccepted = false;
 
@@ -170,26 +198,13 @@ public class SimulatedAnnealing<X,Prob extends Problem<X>> extends OptimizationA
 
             newValue = problem.evaluate(newX);
 
-            if(newValue<currentValue){
+            isAccepted = random.nextDouble()<Math.exp(problem.compare(newValue,currentValue)/temperature);
+            if(isAccepted){
                 currentX = newX;
                 currentValue = newValue;
-                isAccepted = true;
+            }
 
-                if(currentValue<bestValue){
-                    bestX = problem.copyX(currentX);
-                    bestValue = currentValue;
-                }
-            }
-            else{
-                isAccepted = random.nextDouble()<Math.exp((currentValue-newValue)/temperature);
-                if(isAccepted){
-                    currentX = newX;
-                    currentValue = newValue;
-                }
-            }
             temperature = coolingSchedule.cool(new SAState<X>(currentX,temperature,isAccepted));
         }
-        
-        return bestX;
     }
 }

@@ -15,7 +15,7 @@ package oa;
  * @param <X>    解的表示类型（例如 {@code double[]}、{@code int[]} 或自定义数据结构）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class OptimizationAlgorithm<X, Prob extends Problem<X>> {
+public abstract class OptimizationAlgorithm<X,Y, Prob extends Problem<X,Y>> {
     /** 待求解的优化问题，由子类在构造阶段绑定 */
     protected Prob problem;
 
@@ -28,5 +28,5 @@ public abstract class OptimizationAlgorithm<X, Prob extends Problem<X>> {
      *
      * @return 优化过程中发现的最优解（独立拷贝）
      */
-    public abstract X solve();
+    public abstract void solve();
 }

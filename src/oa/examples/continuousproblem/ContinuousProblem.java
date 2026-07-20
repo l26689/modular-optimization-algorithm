@@ -2,7 +2,7 @@ package oa.examples.continuousproblem;
 
 import oa.Problem;
 
-public abstract class ContinuousProblem implements Problem<double[]>{
+public abstract class ContinuousProblem implements Problem<double[],double>{
     protected double[] lowerBounds;
     protected double[] upperBounds;
 

@@ -2,9 +2,10 @@ package oa.examples.Recoders;
 
 import oa.api.Recorder;
 import oa.api.Problem;
+import oa.api.State;
 
 
-public class LastRecorder<X,Y> implements Recorder<X,Y,Problem<X,Y>> {
+public class LastRecorder<X,Y> implements Recorder<X,Y,Problem<X,Y>,State<X>> {
     private X lastX;
     private Problem<X,Y> prob;
 
@@ -12,8 +13,8 @@ public class LastRecorder<X,Y> implements Recorder<X,Y,Problem<X,Y>> {
         this.prob = prob;
     }
     @Override
-    public void record(X x) {
-        this.lastX = x;
+    public void record(State<X> state) {
+        this.lastX = state.currentX();
     }
     public X getLastX() {
         return prob.copyX(lastX);

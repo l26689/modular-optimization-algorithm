@@ -2,8 +2,9 @@ package oa.examples.Recoders;
 
 import oa.api.Problem;
 import oa.api.Recorder;
+import oa.api.State;
 
-public class BestRecorder<X,Y> implements Recorder<X,Y,Problem<X,Y>> {
+public class BestRecorder<X,Y> implements Recorder<X,Y,Problem<X,Y>,State<X>> {
     private X bestX;
     private Y bestY;
     private Problem<X,Y> prob;
@@ -12,10 +13,10 @@ public class BestRecorder<X,Y> implements Recorder<X,Y,Problem<X,Y>> {
         this.prob = prob;
     }
     @Override
-    public void record(X x) {
-        Y y = prob.evaluate(x);
+    public void record(State<X> state) {
+        Y y = prob.evaluate(state.currentX());
         if (bestY == null || prob.compare(y, bestY) >= 0) {
-            bestX = x;
+            bestX = state.currentX();
             bestY = y;
         }
     }

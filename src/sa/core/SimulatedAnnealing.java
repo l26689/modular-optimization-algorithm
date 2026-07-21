@@ -67,11 +67,11 @@ import oa.api.Recorder;
  * @param <X> 解的表示类型（例如 {@code double[]}、{@code int[]}）
  * @param <Y> 目标函数返回值的类型（例如 {@code Double}、{@code double[]}）
  */
-public class SimulatedAnnealing<X,Y> extends OptimizationAlgorithm<X,Y,Problem<X,Y>> {
-    private SAInitializer<X,Y,?> initializer;//初始化器
-    private SAPerturbation<X,Y,?> perturbation;//扰动器
-    private SACoolingSchedule<X,Y,?> coolingSchedule;//冷却器
-    private SATerminationCondition<X,Y,?> terminationCondition;//终止条件
+public class SimulatedAnnealing<X,Y> extends OptimizationAlgorithm<X,Y,Problem<X,Y>,SAState<X>> {
+    private SAInitializer<X,Y,? extends Problem<X,Y>> initializer;//初始化器
+    private SAPerturbation<X,Y,? extends Problem<X,Y>> perturbation;//扰动器
+    private SACoolingSchedule<X,Y,? extends Problem<X,Y>> coolingSchedule;//冷却器
+    private SATerminationCondition<X,Y,? extends Problem<X,Y>> terminationCondition;//终止条件
     private Random random;//随机数生成器，由外部或内部创建，统一注入到所有组件，确保随机性可复现
 
     /**
@@ -234,7 +234,7 @@ public class SimulatedAnnealing<X,Y> extends OptimizationAlgorithm<X,Y,Problem<X
      *                 优化结果通过 {@code recorder} 对外提供（如 {@code getBestX()}、{@code getHistory()} 等）
      */
     @Override
-    public void solve(Recorder<X,Y,Problem<X,Y>> recorder){
+    public void solve(Recorder<X,Y,? extends Problem<X,Y>,? super SAState<X>> recorder){
         double temperature= initializer.initialTemperature();
         X currentX = initializer.initialX();
         Y currentValue = problem.evaluate(currentX);
@@ -254,9 +254,8 @@ public class SimulatedAnnealing<X,Y> extends OptimizationAlgorithm<X,Y,Problem<X
             if(isAccepted){
                 currentX = newX;
                 currentValue = newValue;
-                recorder.record(currentX);
             }
-            
+            recorder.record(new SAState<X>(currentX,temperature,isAccepted));
             temperature = coolingSchedule.cool(new SAState<X>(currentX,temperature,isAccepted));
         }
     }

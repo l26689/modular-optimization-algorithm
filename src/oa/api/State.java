@@ -10,6 +10,7 @@ package oa.api;
  * <h3>不可变性</h3>
  * 本类的 {@code currentX} 字段为 {@code final}，创建后不可修改，
  * 确保状态对象在单次迭代内保持一致，避免意外修改。
+ * 如需修改或保存当前解，应先通过 {@link Problem#copyX} 创建副本后再操作。
  *
  * @param <X> 解的表示类型（例如 {@code double[]}、{@code int[]} 或自定义数据结构）
  */

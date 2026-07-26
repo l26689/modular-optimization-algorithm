@@ -1,8 +1,8 @@
 package oa.examples.continuousproblem.myproblem;
 
+import oa.components.Recoders.*;
 import sa.components.basiccomponents.*;
 import sa.core.SimulatedAnnealing;
-import oa.examples.Recoders.*;
 
 public class MyProblemDemo {
     void main() {

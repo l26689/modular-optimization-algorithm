@@ -1,4 +1,4 @@
-package oa.examples.Recoders;
+package oa.components.Recoders;
 
 import oa.api.Problem;
 import oa.api.Recorder;
@@ -16,7 +16,7 @@ public class BestRecorder<X,Y> implements Recorder<X,Y,Problem<X,Y>,State<X>> {
     public void record(State<X> state) {
         Y y = prob.evaluate(state.currentX());
         if (bestY == null || prob.compare(y, bestY) >= 0) {
-            bestX = state.currentX();
+            bestX = prob.copyX(state.currentX());
             bestY = y;
         }
     }

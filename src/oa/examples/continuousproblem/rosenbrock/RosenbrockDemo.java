@@ -1,8 +1,8 @@
 package oa.examples.continuousproblem.rosenbrock;
 
+import oa.components.Recoders.*;
 import sa.components.basiccomponents.*;
 import sa.core.SimulatedAnnealing;
-import oa.examples.Recoders.*;
 
 public class RosenbrockDemo {
     void main() {

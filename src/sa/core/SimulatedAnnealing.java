@@ -179,13 +179,13 @@ public class SimulatedAnnealing<X,Y> extends OptimizationAlgorithm<X,Y,Problem<X
      * <h3>compare 与 Metropolis 接受准则</h3>
      * 本方法使用统一表达式计算接受概率，不显式分支：
      * <pre>{@code
-     *   P = exp(problem.compare(newValue, currentValue) / temperature)
+     *   P = exp(problem.compare(newX, currentX) / temperature)
      * }</pre>
      * 其中 {@link Problem#compare} 定义的是<b>偏序关系</b>（partial order）：
      * <ul>
-     *   <li>{@code compare(new, current) > 0} → 候选解优于当前解</li>
-     *   <li>{@code compare(new, current) < 0} → 候选解劣于当前解</li>
-     *   <li>{@code compare(new, current) = 0} → 两者等优 <b>或</b> 互不支配</li>
+     *   <li>{@code compare(newX, currentX) > 0} → 候选解的目标值优于当前解的目标值</li>
+     *   <li>{@code compare(newX, currentX) < 0} → 候选解的目标值劣于当前解的目标值</li>
+     *   <li>{@code compare(newX, currentX) = 0} → 候选解的目标值等优 <b>或</b> 互不支配</li>
      * </ul>
      * 对应的接受行为：
      * <ul>
@@ -237,23 +237,17 @@ public class SimulatedAnnealing<X,Y> extends OptimizationAlgorithm<X,Y,Problem<X
     public void solve(Recorder<X,Y,? extends Problem<X,Y>,? super SAState<X>> recorder){
         double temperature= initializer.initialTemperature();
         X currentX = initializer.initialX();
-        Y currentValue = problem.evaluate(currentX);
-
-        X newX = problem.copyX(currentX);
-        Y newValue;
+         X newX = problem.copyX(currentX);
 
         boolean isAccepted = false;
 
         while (!terminationCondition.check(new SAState<X>(currentX,temperature,isAccepted))) {
-            
+
             newX = perturbation.perturb(new SAState<X>(currentX,temperature,isAccepted));
 
-            newValue = problem.evaluate(newX);
-
-            isAccepted = random.nextDouble()<Math.exp(problem.compare(newValue,currentValue)/temperature);
+            isAccepted = random.nextDouble()<Math.exp(problem.compare(newX,currentX)/temperature);
             if(isAccepted){
                 currentX = newX;
-                currentValue = newValue;
             }
             recorder.record(new SAState<X>(currentX,temperature,isAccepted));
             temperature = coolingSchedule.cool(new SAState<X>(currentX,temperature,isAccepted));

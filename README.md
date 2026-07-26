@@ -63,14 +63,14 @@ MOA/
 public interface Problem<X, Y> {
     Y evaluate(X x);           // 评估解的质量（必须是纯函数）
     X copyX(X x);              // 深拷贝解
-    double compare(Y y1, Y y2); // 比较两个目标值
+    double compare(X x1, X x2); // 比较两个解的目标值的优劣（内部可能调用 evaluate）
 }
 ```
 
 `compare()` 方法定义**偏序关系**：
-- **正值**（`> 0`）—— `y1` 优于 `y2`
-- **负值**（`< 0`）—— `y1` 劣于 `y2`
-- **零**（`= 0`）—— 两者等优 **或** 无法比较（无支配关系）
+- **正值**（`> 0`）—— `evaluate(x1)` 优于 `evaluate(x2)`
+- **负值**（`< 0`）—— `evaluate(x1)` 劣于 `evaluate(x2)`
+- **零**（`= 0`）—— 两者目标值等优 **或** 无法比较（无支配关系）
 
 绝对值表示优劣差距的大小，使 Metropolis 准则能动态调整接受概率。
 

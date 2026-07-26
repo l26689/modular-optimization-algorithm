@@ -268,19 +268,19 @@ public class MyProblem extends ContinuousProblem {
 
 ## 📋 核心方法语义
 
-### Problem.compare(Y y1, Y y2)
+### Problem.compare(X x1, X x2)
 
-比较两个目标值，返回带符号的差值以指示优劣程度：
+比较两个解的目标值的优劣，返回带符号的差值以指示优劣程度。本方法内部可能会调用 `evaluate()` 获取目标值后进行对比：
 
 | 返回值 | 含义 |
 |--------|------|
-| `> 0`（正值） | `y1` 优于 `y2` |
-| `< 0`（负值） | `y1` 劣于 `y2` |
+| `> 0`（正值） | `evaluate(x1)` 优于 `evaluate(x2)` |
+| `< 0`（负值） | `evaluate(x1)` 劣于 `evaluate(x2)` |
 | `= 0` | 两者等优 **或** 无法比较（无支配关系） |
 
 - 返回值的**绝对值**表示优劣差距的大小，绝对值越大差距越显著
 - 此方法**不保证**反对称性（即 `compare(A, B) != -compare(B, A)` 可能成立）
-- 示例：最小化问题中 `compare(y1, y2) = y2 - y1`，当 `y1 < y2` 时返回正值
+- 示例：最小化问题中 `compare(x1, x2) = evaluate(x2) - evaluate(x1)`，当 `evaluate(x1) < evaluate(x2)` 时返回正值
 
 ### SATerminationCondition.check(SAState state)
 

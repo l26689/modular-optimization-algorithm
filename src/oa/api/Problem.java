@@ -12,8 +12,8 @@ package oa.api;
  *   以便组件安全地多次调用以获取目标值。</li>
  *   <li>{@link #copyX(Object)} 必须返回完全独立的深拷贝对象，
  *   确保主算法保存的历史最优解不会被后续迭代意外修改。</li>
- *   <li>{@link #compare(Object, Object)} 用于比较两个目标值，决定哪个解更优。
- *   此方法独立于 {@code evaluate}，使得同一问题可支持不同的优化方向（最小化/最大化）
+ *   <li>{@link #compare(Object, Object)} 用于比较两个解的优劣，决定哪个解更优。
+ *   此方法内部可能会调用 {@code evaluate}，使得同一问题可支持不同的优化方向（最小化/最大化）
  *   而无需修改评估逻辑。</li>
  * </ul>
  *
@@ -54,16 +54,17 @@ public interface Problem<X,Y> {
     X copyX(X x);
 
     /**
-     * 比较两个目标值，返回带符号的差值以指示优劣程度。
+     * 比较两个解对应的的目标值的优劣，返回带符号的差值以指示优劣程度。
      * <p>
-     * 本方法将优化方向（最小化/最大化）与 {@link #evaluate} 解耦：
-     * 评估逻辑始终返回原始目标值，而比较逻辑由本方法单独定义。
+     * 本方法内部可能会调用 {@link #evaluate} 获取两个解的目标值后进行对比，
+     * 将优化方向（最小化/最大化）与评估逻辑解耦：
+     * 评估函数始终返回原始目标值，而比较逻辑由本方法单独定义。
      * 这样，同一问题的评估函数无需修改，即可在最小化和最大化之间切换。
      *
      * <h3>返回值约定</h3>
      * <ul>
-     *   <li><b>正值</b>（{@code > 0}）——表示 {@code y1} 优于 {@code y2}（记为 {@code y1 > y2}）</li>
-     *   <li><b>负值</b>（{@code < 0}）——表示 {@code y1} 劣于 {@code y2}（记为 {@code y1 < y2}）</li>
+     *   <li><b>正值</b>（{@code > 0}）——表示 {@code evaluate(x1)} 优于 {@code evaluate(x2)}（记为 {@code y1 > y2}）</li>
+     *   <li><b>负值</b>（{@code < 0}）——表示 {@code evaluate(x1)} 劣于 {@code evaluate(x2)}（记为 {@code y1 < y2}）</li>
      *   <li><b>零</b>（{@code = 0}）——表示两者等优 <b>或</b> 无法比较（无支配关系）。
      *       本方法仅定义<b>偏序关系</b>（partial order），不要求全序（total order）：
      *       两个解可能互不支配，此时返回零是合法的</li>
@@ -73,8 +74,8 @@ public interface Problem<X,Y> {
      * 此信息使模拟退火中的 Metropolis 准则能够根据差距大小动态调整接受概率，
      * 而非仅依赖二值判断。
      * <p>
-     * 示例：对于最小化问题，{@code compare(y1, y2) = y2 - y1}，
-     * 当 {@code y1 < y2} 时返回正值，表示 {@code y1}（更小的值）更优。
+     * 示例：对于最小化问题，{@code compare(x1, x2) = evaluate(x2) - evaluate(x1)}，
+     * 当 {@code evaluate(x1) < evaluate(x2)} 时返回正值，表示 {@code x1}（更小的值）更优。
      *
      * <h3>反对称性的缺失</h3>
      * 本方法 <b>不保证</b> {@code compare(A, B) = -compare(B, A)}。
@@ -82,10 +83,10 @@ public interface Problem<X,Y> {
      * 但在多目标 Pareto 支配等偏序场景中，符号和绝对值都可能不对称。
      * 调用者不应依赖反对称性，而应始终以本方法的直接返回值作为唯一依据。
      *
-     * @param y1 第一个目标值
-     * @param y2 第二个目标值
-     * @return 正值表示 {@code y1} 优于 {@code y2}；负值表示 {@code y1} 劣于 {@code y2}；
+     * @param x1 第一个解，不可被修改
+     * @param x2 第二个解，不可被修改
+     * @return 正值表示 {@code evaluate(x1)} 优于 {@code evaluate(x2)}；负值表示 {@code evaluate(x1)} 劣于 {@code evaluate(x2)}；
      *         零表示两者等优或无法比较（无支配关系）；绝对值表示优劣差距大小
      */
-    double compare(Y y1, Y y2);
+    double compare(X x1, X x2);
 }

@@ -24,7 +24,7 @@ public abstract class ContinuousProblem implements Problem<double[],Double>{
         java.util.Arrays.fill(bounds, value);
         return bounds;
     }
-    public  double compare(Double y1, Double y2){
-        return y2-y1;
+    public double compare(double[] x1, double[] x2){
+        return evaluate(x2) - evaluate(x1);
     }
 }

@@ -5,7 +5,7 @@ import java.util.Random;
 import oa.examples.continuousproblem.ContinuousProblem;
 import sa.core.SAInitializer;
 
-public class SABasicInitializer extends SAInitializer<double[],Double,ContinuousProblem> {
+public class SABasicInitializer extends SAInitializer<double[],ContinuousProblem> {
     private double initialTemp;
     private int dim;
     private double[] lowerBounds;

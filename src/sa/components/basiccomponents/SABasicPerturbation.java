@@ -6,7 +6,7 @@ import oa.examples.continuousproblem.ContinuousProblem;
 import sa.core.SAPerturbation;
 import sa.core.SAState;
 
-public class SABasicPerturbation extends SAPerturbation<double[],Double,ContinuousProblem> {
+public class SABasicPerturbation extends SAPerturbation<double[],ContinuousProblem> {
 
     private double[] lowerBounds;
     private double[] upperBounds;

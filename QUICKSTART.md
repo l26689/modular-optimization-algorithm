@@ -36,7 +36,7 @@ java -cp bin oa.examples.continuousproblem.rosenbrock.RosenbrockDemo
 
 ### 步骤一：定义问题
 
-创建一个类实现 `Problem<X, Y>` 接口。为方便起见，连续优化问题可直接继承 `ContinuousProblem`：
+创建一个类实现 `Problem<X>` 接口（只需 `copyX()` 和 `compare()`）。如需向用户展示目标函数值，额外实现 `Evaluable<X, Y>`。为方便起见，连续优化问题可直接继承 `ContinuousProblem`（已同时实现 `Problem` 和 `Evaluable`）：
 
 ```java
 package mypackage;
@@ -65,7 +65,7 @@ public class MyProblem extends ContinuousProblem {
 }
 ```
 
-> **注**：`createBounds()` 已在 `ContinuousProblem` 中定义，子类可直接使用。非连续问题可直接实现 `Problem<X, Y>` 接口，无需继承 `ContinuousProblem`。
+> **注**：`createBounds()` 和 `copyX()` 已在 `ContinuousProblem` 中定义，子类可直接使用。非连续问题可直接实现 `Problem<X>` 接口，无需继承 `ContinuousProblem`。
 
 ### 步骤二：组装算法并运行
 
@@ -82,7 +82,7 @@ public class MyDemo {
         MyProblem problem = new MyProblem(2);
 
         // 2. 组装 SA 算法
-        SimulatedAnnealing<double[], Double> sa =
+        SimulatedAnnealing<double[]> sa =
             new SimulatedAnnealing<>(
                 problem,
                 new SABasicInitializer(100),
@@ -92,11 +92,11 @@ public class MyDemo {
             );
 
         // 3. 创建记录器并启动优化
-        BestRecorder<double[], Double> recorder = new BestRecorder<>(problem);
+        BestRecorder<double[]> recorder = new BestRecorder<>(problem);
         sa.solve(recorder);
 
         // 4. 输出结果
-        System.out.println("最优解目标值: " + recorder.getBestY());
+        System.out.println("最优解目标值: " + problem.evaluate(recorder.getBestX()));
         System.out.println("最优解: " + java.util.Arrays.toString(recorder.getBestX()));
     }
 }
@@ -116,7 +116,7 @@ java -cp bin mypackage.MyDemo
 ```java
 import java.util.Random;
 
-SimulatedAnnealing<double[], Double> sa =
+SimulatedAnnealing<double[]> sa =
     new SimulatedAnnealing<>(
         new Random(42),  // 固定种子
         problem,

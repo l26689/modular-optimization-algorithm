@@ -22,7 +22,7 @@ package oa.api;
  * <ul>
  *   <li>{@code record} 应快速返回，避免阻塞主优化循环。
  *       若涉及 I/O 等耗时操作，建议在子类中使用异步或缓冲机制。</li>
- *   <li>传入的 {@code state} 为静态副本，如需修改，请使用 {@link Problem#copy()} 方法。</li>
+ *   <li>传入的 {@code state} 为静态副本，如需修改，请使用 {@link Problem#copyX()} 方法。</li>
  * </ul>
  *
  * <h3>获取优化结果</h3>
@@ -39,10 +39,9 @@ package oa.api;
  * 调试场景需要完整轨迹），一刀切的抽象反而会限制灵活性。
  *
  * @param <X> 解的表示类型
- * @param <Y> 目标函数返回值的类型
- * @param <Prob> 优化问题的类型，必须是 {@link Problem<X,Y>} 类的子类
+ * @param <Prob> 优化问题的类型，必须是 {@link Problem<X>} 类的子类
  */
-abstract public interface Recorder<X,Y,Prob extends Problem<X,Y>,S extends State<X>> {
+abstract public interface Recorder<X,Prob extends Problem<X>,S extends State<X>> {
     /**
      * 记录一个解及其对应的目标值。
      * <p>

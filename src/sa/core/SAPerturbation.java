@@ -34,12 +34,12 @@ import oa.api.Problem;
  * 的形式接收本组件（下界通配符）。这意味着实现类可以将 {@code Prob} 声明为
  * 比实际使用的问题类型更泛化的父类型。例如，一个仅通过 {@link Problem#copyX}
  * 和边界信息工作的扰动器，可以声明为 {@code SAPerturbation<double[], Problem<double[]>>}，
- * 并被传入 {@code SimulatedAnnealing<double[], ContinuousProblem>} 中。
+ * 并被传入 {@code SimulatedAnnealing<double[]>} 中。
  *
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class SAPerturbation<X,Y, Prob extends Problem<X,Y>> {
+public abstract class SAPerturbation<X, Prob extends Problem<X>> {
 
     /**
      * 绑定问题实例，使扰动器获取问题的维度、边界等元数据。

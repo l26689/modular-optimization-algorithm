@@ -5,11 +5,11 @@ import oa.api.Problem;
 import oa.api.State;
 
 
-public class LastRecorder<X,Y> implements Recorder<X,Y,Problem<X,Y>,State<X>> {
+public class LastRecorder<X,Y> implements Recorder<X,Problem<X>,State<X>> {
     private X lastX;
-    private Problem<X,Y> prob;
+    private Problem<X> prob;
 
-    public LastRecorder(Problem<X,Y> prob) {
+    public LastRecorder(Problem<X> prob) {
         this.prob = prob;
     }
     @Override
@@ -18,8 +18,5 @@ public class LastRecorder<X,Y> implements Recorder<X,Y,Problem<X,Y>,State<X>> {
     }
     public X getLastX() {
         return prob.copyX(lastX);
-    }
-    public Y getLastY() {
-        return prob.evaluate(lastX);
     }
 }

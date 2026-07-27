@@ -18,7 +18,7 @@
 
 | 不传递 | 原因 |
 |--------|------|
-| 目标函数值 `Y` | 组件可通过 `Problem.evaluate()` 自行获取 |
+| 目标函数值 `Y` | `evaluate()` 已从 `Problem` 移除，组件应通过 `compare()` 比较解 |
 | 是否改进 | 组件可通过 `Problem.compare()` 自行比较 |
 | 迭代次数 | 组件内部维护计数器，通过方法调用次数推导 |
 
@@ -33,7 +33,8 @@
 MOA/
 ├── oa.api/                    # 通用优化算法抽象
 │   ├── OptimizationAlgorithm  # 算法基类
-│   ├── Problem                # 问题定义接口
+│   ├── Problem                # 问题定义接口（copyX + compare）
+│   ├── Evaluable              # 可评估接口（evaluate）
 │   ├── Recorder               # 记录器接口
 │   ├── State                  # 状态基类
 │   └── Reusable               # 可复用契约
@@ -57,20 +58,27 @@ MOA/
 
 ### Problem — 问题定义
 
-实现 `Problem<X, Y>` 接口，定义解的表示类型 `X` 和目标值类型 `Y`：
+实现 `Problem<X>` 接口，定义解的表示类型 `X`：
 
 ```java
-public interface Problem<X, Y> {
-    Y evaluate(X x);           // 评估解的质量（必须是纯函数）
+public interface Problem<X> {
     X copyX(X x);              // 深拷贝解
-    double compare(X x1, X x2); // 比较两个解的目标值的优劣（内部可能调用 evaluate）
+    double compare(X x1, X x2); // 比较两个解的优劣（内部封装评估逻辑）
+}
+```
+
+框架核心只依赖 `compare()`，无需知道目标值的具体类型。如需向用户展示目标函数值，额外实现 `Evaluable<X, Y>` 接口（提供 `evaluate()` 方法）。
+
+```java
+public interface Evaluable<X, Y> {
+    Y evaluate(X x);  // 评估解的质量（必须是纯函数）
 }
 ```
 
 `compare()` 方法定义**偏序关系**：
-- **正值**（`> 0`）—— `evaluate(x1)` 优于 `evaluate(x2)`
-- **负值**（`< 0`）—— `evaluate(x1)` 劣于 `evaluate(x2)`
-- **零**（`= 0`）—— 两者目标值等优 **或** 无法比较（无支配关系）
+- **正值**（`> 0`）—— `x1` 优于 `x2`
+- **负值**（`< 0`）—— `x1` 劣于 `x2`
+- **零**（`= 0`）—— 两者等优 **或** 无法比较（无支配关系）
 
 绝对值表示优劣差距的大小，使 Metropolis 准则能动态调整接受概率。
 
@@ -79,14 +87,14 @@ public interface Problem<X, Y> {
 `solve()` 方法返回 `void`，优化结果通过 `Recorder` 对外提供：
 
 ```java
-public interface Recorder<X, Y, Prob extends Problem<X,Y>, S extends State<X>> {
+public interface Recorder<X, Prob extends Problem<X>, S extends State<X>> {
     void record(S state);  // 在适当时机被算法调用
 }
 ```
 
 内置 Recorder：
-- **BestRecorder** — 记录历史最优解
-- **LastRecorder** — 记录最后一次接受的解
+- **BestRecorder** — 记录历史最优解（提供 `getBestX()`）
+- **LastRecorder** — 记录最后一次接受的解（提供 `getLastX()`）
 
 ### State — 算法状态
 
@@ -103,7 +111,7 @@ public interface Recorder<X, Y, Prob extends Problem<X,Y>, S extends State<X>> {
 所有组件只需继承对应的抽象类并实现核心方法。以下是一个线性冷却策略示例：
 
 ```java
-public class LinearCoolingSchedule extends SACoolingSchedule<double[], Double, ContinuousProblem> {
+public class LinearCoolingSchedule extends SACoolingSchedule<double[], ContinuousProblem> {
     private double coolingRate;
     private int currentIteration;
     private int maxIterations;
@@ -134,7 +142,7 @@ public class LinearCoolingSchedule extends SACoolingSchedule<double[], Double, C
 
 ## 🎯 自定义问题
 
-要让 MOA 优化你的问题，只需创建一个类实现 `Problem<X, Y>` 接口。为方便起见，连续优化问题可直接继承 `ContinuousProblem`：
+要让 MOA 优化你的问题，只需创建一个类实现 `Problem<X>` 接口（只需 `copyX()` 和 `compare()`）。如需向用户展示目标函数值，额外实现 `Evaluable<X, Y>`。为方便起见，连续优化问题可直接继承 `ContinuousProblem`（已同时实现 `Problem` 和 `Evaluable`）：
 
 ```java
 public class MyProblem extends ContinuousProblem {
@@ -159,7 +167,7 @@ public class MyProblem extends ContinuousProblem {
 }
 ```
 
-> **注**：`createBounds()` 已在 `ContinuousProblem` 中定义，子类可直接使用。非连续问题可直接实现 `Problem<X, Y>` 接口。
+> **注**：`createBounds()` 和 `copyX()` 已在 `ContinuousProblem` 中定义，子类可直接使用。非连续问题可直接实现 `Problem<X>` 接口（只需 `copyX()` 和 `compare()`）。
 
 ## ⚡ 性能建议：为评估添加缓存
 
@@ -201,7 +209,7 @@ public class CachedMyProblem extends ContinuousProblem {
 
 **不可变性**：传入组件的 `currentX` 解不应被原地修改；扰动方法必须返回新对象。
 
-**纯函数**：`Problem.evaluate()` 必须是纯函数（相同输入 -> 相同输出），且每次返回的 `Y` 都必须是独立的新对象。
+**纯函数**：`compare()` 内部调用的评估逻辑必须是纯函数（相同输入 -> 相同输出）。若实现了 `Evaluable`，`evaluate()` 也必须是纯函数且每次返回独立新对象。
 
 **随机数复用**：所有组件共享主算法注入的同一 `Random` 实例，不应自行创建独立的随机数生成器。
 

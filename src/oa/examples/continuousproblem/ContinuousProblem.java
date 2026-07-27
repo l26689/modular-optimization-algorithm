@@ -1,8 +1,9 @@
 package oa.examples.continuousproblem;
 
 import oa.api.Problem;
+import oa.api.Evaluable;
 
-public abstract class ContinuousProblem implements Problem<double[],Double>{
+public abstract class ContinuousProblem implements Problem<double[]>,Evaluable<double[],Double>{
     protected double[] lowerBounds;
     protected double[] upperBounds;
 
@@ -13,7 +14,7 @@ public abstract class ContinuousProblem implements Problem<double[],Double>{
         this.lowerBounds = lower.clone();
         this.upperBounds = upper.clone();
     }
-
+    @Override
     public abstract Double evaluate(double[] x);
     public int getDimension() { return lowerBounds.length;}
     public double[] getLowerBounds() { return lowerBounds.clone();}
@@ -24,6 +25,7 @@ public abstract class ContinuousProblem implements Problem<double[],Double>{
         java.util.Arrays.fill(bounds, value);
         return bounds;
     }
+    @Override
     public double compare(double[] x1, double[] x2){
         return evaluate(x2) - evaluate(x1);
     }

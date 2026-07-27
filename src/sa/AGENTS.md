@@ -22,10 +22,10 @@ MSA 是一个**模块化优化算法框架**，将模拟退火拆解为四个可
 | 参数 | 含义 | 典型值 |
 |------|------|--------|
 | `X` | 解的表示类型 | `double[]`、`int[]`、自定义数据结构 |
-| `Y` | 目标函数返回值类型 | `Double`（单目标）、`double[]`（多目标） |
-| `Prob` | 问题类型，必须实现 `Problem<X, Y>` | `ContinuousProblem`、自定义问题类 |
+| `Y` | 目标函数返回值类型（用于 `Evaluable<X, Y>`） | `Double`（单目标）、`double[]`（多目标） |
+| `Prob` | 问题类型，必须实现 `Problem<X>` | `ContinuousProblem`、自定义问题类 |
 
-示例：`SAPerturbation<double[], Double, ContinuousProblem>` 表示一个处理连续空间、单目标优化的扰动器。
+示例：`SAPerturbation<double[], ContinuousProblem>` 表示一个处理连续空间扰动器。
 
 ### 组件通用模式
 
@@ -68,7 +68,7 @@ state.isAccepted()    // 上一轮是否接受新解（见下方冷启动说明�
 
 组件接口**只传递无法自行推导的信息**：
 
-- ❌ 不传递目标函数值 → 组件可通过 `Problem.evaluate()` 获取
+- ❌ 不传递目标函数值 → `evaluate()` 已从 `Problem` 移除，组件应通过 `compare()` 比较解
 - ❌ 不传递是否改进 → 组件可通过 `Problem.compare()` 比较
 - ❌ 不传递迭代次数 → 组件内部维护计数器
 
@@ -82,14 +82,6 @@ state.isAccepted()    // 上一轮是否接受新解（见下方冷启动说明�
 public class MyProblem extends ContinuousProblem {
     public MyProblem(int dimension) {
         super(createBounds(dimension, -100), createBounds(dimension, 100));
-    }
-
-    @Override
-    public Double evaluate(double[] x) {
-        // 实现目标函数（必须是纯函数）
-        double sum = 0.0;
-        for (double v : x) sum += v * v;
-        return sum;
     }
 
     @Override
@@ -108,7 +100,7 @@ public class MyProblem extends ContinuousProblem {
 ### 任务二：自定义扰动器
 
 ```java
-public class GaussianPerturbation extends SAPerturbation<double[], Double, ContinuousProblem> {
+public class GaussianPerturbation extends SAPerturbation<double[], ContinuousProblem> {
     private ContinuousProblem problem;
     private Random random;
 
@@ -135,7 +127,7 @@ public class GaussianPerturbation extends SAPerturbation<double[], Double, Conti
 ### 任务三：自适应冷却策略
 
 ```java
-public class AdaptiveCooling extends SACoolingSchedule<double[], Double, ContinuousProblem> {
+public class AdaptiveCooling extends SACoolingSchedule<double[], ContinuousProblem> {
     private double baseRate;
     private int acceptedCount;
     private int totalCalls;
@@ -168,7 +160,7 @@ public class AdaptiveCooling extends SACoolingSchedule<double[], Double, Continu
 
 ```java
 MyProblem problem = new MyProblem(2);
-SimulatedAnnealing<double[], Double> sa =
+SimulatedAnnealing<double[]> sa =
     new SimulatedAnnealing<>(
         problem,
         new SABasicInitializer(100),
@@ -177,15 +169,15 @@ SimulatedAnnealing<double[], Double> sa =
         new SABasicTerminationCondition(10000)
     );
 
-BestRecorder<double[], Double> recorder = new BestRecorder<>(problem);
+BestRecorder<double[]> recorder = new BestRecorder<>(problem);
 sa.solve(recorder);
-System.out.println("最优值: " + recorder.getBestY());
+System.out.println("最优值: " + problem.evaluate(recorder.getBestX()));
 ```
 
 ### 任务五：可复现结果
 
 ```java
-SimulatedAnnealing<double[], Double> sa =
+SimulatedAnnealing<double[]> sa =
     new SimulatedAnnealing<>(
         new Random(42),  // 固定种子
         problem,
@@ -202,7 +194,7 @@ SimulatedAnnealing<double[], Double> sa =
 |------|------|
 | 冷启动 | 详见上方 SAState 冷启动说明 |
 | 不可变性 | 不得原地修改 `state.currentX()`，必须返回新对象 |
-| 纯函数 | `evaluate()` 必须是纯函数，相同输入 -> 相同输出，且每次返回的 `Y` 都必须是独立的新对象 |
+| 纯函数 | `compare()` 内部调用的评估逻辑必须是纯函数，相同输入 -> 相同输出。若实现了 `Evaluable`，`evaluate()` 也必须是纯函数且每次返回独立新对象 |
 | 随机数 | 使用注入的 `Random`，不得自行创建 |
 | 线程安全 | 框架单线程运行，组件内部状态需自行同步 |
 

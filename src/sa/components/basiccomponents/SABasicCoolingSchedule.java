@@ -6,7 +6,7 @@ import java.util.Random;
 
 import oa.examples.continuousproblem.ContinuousProblem;
 
-public class SABasicCoolingSchedule extends SACoolingSchedule<double[],Double,ContinuousProblem> {
+public class SABasicCoolingSchedule extends SACoolingSchedule<double[],ContinuousProblem> {
     private double coolingRate;
     private int currentIteration;
     private int maxIterations;

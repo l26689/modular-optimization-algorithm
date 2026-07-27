@@ -14,8 +14,7 @@ import oa.api.Problem;
  *
  * <h3>最少信息原则</h3>
  * 本组件仅接收主算法维护的原子信息：温度、当前解、上一次接受标志。
- * 目标函数值、改进幅度等冗余数据不在参数中，若需要可自行通过持有的
- * {@link Problem#evaluate} 获取。
+ * 目标函数值、改进幅度等冗余数据不在参数中，若需要可自行通过持有的问题实例获取。
  *
  * <h3>通配符兼容性</h3>
  * {@link SimulatedAnnealing} 构造函数以 {@code SACoolingSchedule<X, ? super Prob>}
@@ -27,7 +26,7 @@ import oa.api.Problem;
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class SACoolingSchedule<X,Y, Prob extends Problem<X,Y>> {
+public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
 
     /**
      * 绑定问题实例，使冷却策略可获取问题的维度等元数据（多数冷却策略无需此信息，

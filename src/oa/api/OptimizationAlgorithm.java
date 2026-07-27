@@ -19,11 +19,10 @@ package oa.api;
  * 从中获取最优解、搜索历史等结果。
  *
  * @param <X>    解的表示类型（例如 {@code double[]}、{@code int[]} 或自定义数据结构）
- * @param <Y>    目标函数返回值的类型（例如 {@code Double}、{@code double[]}）
- * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X, Y>}
+ * @param <Prob>  问题类型，必须实现 {@link Problem}{@code <X>}
  * @param <S>    状态类型，根据具体优化算法，类型不同，需要继承 {@link State}{@code <X>}
  */
-public abstract class OptimizationAlgorithm<X,Y, Prob extends Problem<X,Y>, S extends State<X>> {
+public abstract class OptimizationAlgorithm<X,Prob extends Problem<X>, S extends State<X>> {
     /** 待求解的优化问题，由子类在构造阶段绑定 */
     protected Prob problem;
 
@@ -37,6 +36,6 @@ public abstract class OptimizationAlgorithm<X,Y, Prob extends Problem<X,Y>, S ex
      * @param recorder 记录器，负责接收算法产生的解及其目标值；
      *                 优化结果通过 {@code recorder} 的特定方法（如 {@code getBestX()}）对外提供
      */
-    public abstract void solve(Recorder<X,Y,? extends Prob,? super S> recorder);
+    public abstract void solve(Recorder<X,? extends Prob,? super S> recorder);
 
 }

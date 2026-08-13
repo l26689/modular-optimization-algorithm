@@ -1,7 +1,6 @@
 package oa.components.Recoders;
 
 import java.util.Iterator;
-import java.util.Random;
 
 import oa.api.optimizationalgorithm.State;
 import oa.api.problem.Problem;

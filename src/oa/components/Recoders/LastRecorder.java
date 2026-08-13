@@ -3,7 +3,6 @@ package oa.components.Recoders;
 import oa.api.optimizationalgorithm.State;
 
 import java.util.Iterator;
-import java.util.Random;
 
 import oa.api.problem.Problem;
 import oa.api.spi.Recorder;

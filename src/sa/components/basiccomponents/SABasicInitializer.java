@@ -1,7 +1,5 @@
 package sa.components.basiccomponents;
 
-import java.util.Random;
-
 import oa.examples.continuousproblem.ContinuousProblem;
 import oa.examples.continuousproblem.RandomInitializer;
 import sa.core.SAInitializer;

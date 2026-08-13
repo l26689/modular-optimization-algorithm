@@ -11,7 +11,7 @@
 
 ```bash
 # 在项目根目录下执行
-javac -d bin src/oa/api/*.java src/oa/components/Recoders/*.java src/oa/examples/continuousproblem/*.java src/oa/examples/continuousproblem/myproblem/*.java src/oa/examples/continuousproblem/rosenbrock/*.java src/sa/core/*.java src/sa/components/basiccomponents/*.java
+javac -d bin src/oa/api/problem/*.java src/oa/api/optimizationalgorithm/*.java src/oa/api/spi/*.java src/oa/components/Recoders/*.java src/oa/components/terminationcondition/*.java src/oa/examples/continuousproblem/*.java src/oa/examples/continuousproblem/myproblem/*.java src/oa/examples/continuousproblem/rosenbrock/*.java src/sa/core/*.java src/sa/components/basiccomponents/*.java
 ```
 
 ## ▶️ 2. 运行示例
@@ -73,6 +73,7 @@ public class MyProblem extends ContinuousProblem {
 package mypackage;
 
 import oa.components.Recoders.BestRecorder;
+import oa.components.terminationcondition.MaxCallTerminationCondition;
 import sa.core.SimulatedAnnealing;
 import sa.components.basiccomponents.*;
 
@@ -88,7 +89,7 @@ public class MyDemo {
                 new SABasicInitializer(100),
                 new SABasicPerturbation(),
                 new SABasicCoolingSchedule(0.99, 100),
-                new SABasicTerminationCondition(10000)
+                new MaxCallTerminationCondition<double[]>(10000)
             );
 
         // 3. 创建记录器并启动优化
@@ -115,6 +116,7 @@ java -cp bin mypackage.MyDemo
 
 ```java
 import java.util.Random;
+import oa.components.terminationcondition.MaxCallTerminationCondition;
 
 SimulatedAnnealing<double[]> sa =
     new SimulatedAnnealing<>(
@@ -123,7 +125,7 @@ SimulatedAnnealing<double[]> sa =
         new SABasicInitializer(100),
         new SABasicPerturbation(),
         new SABasicCoolingSchedule(0.99, 100),
-        new SABasicTerminationCondition(10000)
+        new MaxCallTerminationCondition<double[]>(10000)
     );
 ```
 

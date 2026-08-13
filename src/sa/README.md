@@ -29,12 +29,23 @@
 
 ### 架构概览
 
+SA 组件继承自 `oa.api.spi` 中的通用接口，形成两层继承体系：
+
 ```
+                       oa.api.spi
+                  ┌────────┼────────┐
+           Component  Initializer  TerminationCondition
+               │          │              │
+           sa.core       │              │
+        ┌──────┼──────┐  │              │
+  SAPerturbation  SACoolingSchedule     │
+               SAInitializer    SATerminationCondition
+
 SimulatedAnnealing<X>
-|-- SAInitializer<X, Prob>     -> initialX() + initialTemperature()
-|-- SAPerturbation<X, Prob>    -> perturb(SAState)
-|-- SACoolingSchedule<X, Prob> -> cool(SAState)
-+-- SATerminationCondition<X, Prob> -> check(SAState)
+|-- SAInitializer<X, Prob>              -> initialX() + initialTemperature()
+|-- SAPerturbation<X, Prob>             -> perturb(SAState)
+|-- SACoolingSchedule<X, Prob>          -> cool(SAState)
++-- SATerminationCondition<X, Prob>     -> check(SAState)
 ```
 
 主循环流程：
@@ -74,16 +85,15 @@ src/sa/
 |-- core/                          # 核心框架
 |   |-- SimulatedAnnealing         # 主循环控制器
 |   |-- SAState                    # SA 迭代状态封装
-|   |-- SAInitializer              # 初始化器抽象类
-|   |-- SAPerturbation             # 扰动器抽象类
-|   |-- SACoolingSchedule          # 冷却策略抽象类
-|   +-- SATerminationCondition     # 终止条件抽象类
+|   |-- SAInitializer              # SA 初始化器接口（extends Initializer）
+|   |-- SAPerturbation             # SA 扰动器接口（extends Component）
+|   |-- SACoolingSchedule          # SA 冷却策略接口（extends Component）
+|   +-- SATerminationCondition     # SA 终止条件接口（extends TerminationCondition）
 |-- components/
 |   +-- basiccomponents/           # 内置基础实现
-|       |-- SABasicInitializer
-|       |-- SABasicPerturbation
-|       |-- SABasicCoolingSchedule
-|       +-- SABasicTerminationCondition
+|       |-- SABasicInitializer     # 实现 SAInitializer
+|       |-- SABasicPerturbation    # 实现 SAPerturbation
+|       +-- SABasicCoolingSchedule # 实现 SACoolingSchedule
 |-- AGENTS.md                      # AI Agent 使用指南
 +-- README.md                      # 本文档
 ```
@@ -98,6 +108,7 @@ src/sa/
 ```java
 import oa.examples.continuousproblem.myproblem.MyProblem;
 import oa.components.Recoders.BestRecorder;
+import oa.components.terminationcondition.MaxCallTerminationCondition;
 import sa.core.SimulatedAnnealing;
 import sa.components.basiccomponents.*;
 
@@ -111,7 +122,7 @@ SimulatedAnnealing<double[]> sa =
         new SABasicInitializer(100),
         new SABasicPerturbation(),
         new SABasicCoolingSchedule(0.99, 100),
-        new SABasicTerminationCondition(10000)
+        new MaxCallTerminationCondition<double[]>(10000)
     );
 
 // 3. 创建记录器并启动算法
@@ -126,29 +137,27 @@ System.out.println(problem.evaluate(recorder.getBestX()));
 
 ### 1. SAInitializer -- 初始化器
 
-负责生成搜索的起始解和初始温度。
+负责生成搜索的起始解和初始温度。继承自 `oa.api.spi.Initializer<X, Prob, SAState<X>>`。
 
 ```java
-public abstract class SAInitializer<X, Prob extends Problem<X>> {
-    protected abstract void init(Prob problem, Random random);
-    protected abstract X initialX();
-    protected abstract double initialTemperature();
+public interface SAInitializer<X, Prob extends Problem<X>> extends Initializer<X, Prob, SAState<X>> {
+    X initialX();
+    double initialTemperature();
 }
 ```
 
 **核心方法**：
-- `init(problem, random)` -- 绑定问题实例，获取维度、边界等元数据
+- `init(problem, random)` -- 绑定问题实例（继承自 `Component`），获取维度、边界等元数据
 - `initialX()` -- 生成起始解（必须是独立新对象）
 - `initialTemperature()` -- 计算起始温度（应足够高以保证早期探索能力）
 
 ### 2. SAPerturbation -- 扰动器
 
-定义如何从当前解生成邻域候选解。
+定义如何从当前解生成邻域候选解。继承自 `oa.api.spi.Component<X, Prob, SAState<X>>`。
 
 ```java
-public abstract class SAPerturbation<X, Prob extends Problem<X>> {
-    protected abstract void init(Prob problem, Random random);
-    protected abstract X perturb(SAState<X> state);
+public interface SAPerturbation<X, Prob extends Problem<X>> extends Component<X, Prob, SAState<X>> {
+    X perturb(SAState<X> state);
 }
 ```
 
@@ -162,12 +171,11 @@ public abstract class SAPerturbation<X, Prob extends Problem<X>> {
 
 ### 3. SACoolingSchedule -- 冷却策略
 
-定义温度如何随迭代逐步降低。
+定义温度如何随迭代逐步降低。继承自 `oa.api.spi.Component<X, Prob, SAState<X>>`。
 
 ```java
-public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
-    protected abstract void init(Prob problem, Random random);
-    protected abstract double cool(SAState<X> state);
+public interface SACoolingSchedule<X, Prob extends Problem<X>> extends Component<X, Prob, SAState<X>> {
+    double cool(SAState<X> state);
 }
 ```
 
@@ -179,27 +187,29 @@ public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
 
 ### 4. SATerminationCondition -- 终止条件
 
-决定算法何时停止迭代。
+决定算法何时停止迭代。继承自 `oa.api.spi.TerminationCondition<X, Prob, SAState<X>>`。
 
 ```java
-public abstract class SATerminationCondition<X, Prob extends Problem<X>> {
-    protected abstract void init(Prob problem, Random random);
-    protected abstract boolean check(SAState<X> state);
+public interface SATerminationCondition<X, Prob extends Problem<X>>
+        extends TerminationCondition<X, Prob, SAState<X>> {
+    boolean check(SAState<X> state);
 }
 ```
 
 **核心方法**：
 - `check(SAState<X> state)` -- 判断是否终止
   - 返回 `true` 表示满足终止条件，算法停止
-  - 常见实现：最大迭代次数、温度低于阈值、连续未接受等
+  - 常见实现：最大调用次数、温度低于阈值、连续未接受等
   - 首次调用时 `state.getIsAccepted()` 为 `false`（详见 [SAState](#sastate----迭代状态封装)）
+
+内置实现：`oa.components.terminationcondition.MaxCallTerminationCondition` — 实现了 `SATerminationCondition`，基于调用次数上限终止。
 
 ## 🧩 自定义组件
 
-所有组件只需继承对应的抽象类并实现核心方法。以下是一个线性冷却策略示例：
+所有组件只需实现对应的接口并实现核心方法。以下是一个线性冷却策略示例：
 
 ```java
-public class LinearCoolingSchedule extends SACoolingSchedule<double[], ContinuousProblem> {
+public class LinearCoolingSchedule implements SACoolingSchedule<double[], ContinuousProblem> {
     private double coolingRate;
     private int currentIteration;
     private int maxIterations;
@@ -211,12 +221,12 @@ public class LinearCoolingSchedule extends SACoolingSchedule<double[], Continuou
     }
 
     @Override
-    protected void init(ContinuousProblem problem, Random random) {
+    public void init(ContinuousProblem problem, Random random) {
         // 此实现无需额外操作
     }
 
     @Override
-    protected double cool(SAState<double[]> state) {
+    public double cool(SAState<double[]> state) {
         double temperature = state.getTemperature();
         currentIteration++;
         if (currentIteration > maxIterations) {

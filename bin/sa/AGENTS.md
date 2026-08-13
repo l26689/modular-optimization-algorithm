@@ -6,12 +6,12 @@
 
 MSA 是一个**模块化优化算法框架**，将模拟退火拆解为四个可替换组件：
 
-| 组件 | 职责 | 调用时机 |
-|------|------|----------|
-| `SAInitializer` | 生成初始解和初始温度 | 算法启动时 |
-| `SAPerturbation` | 从当前解生成候选解 | 每轮迭代 |
-| `SACoolingSchedule` | 降低温度 | 每轮迭代后 |
-| `SATerminationCondition` | 判断是否停止 | 每轮迭代后 |
+| 组件 | 职责 | 调用时机 | 继承关系 |
+|------|------|----------|----------|
+| `SAInitializer` | 生成初始解和初始温度 | 算法启动时 | `extends Initializer`（`oa.api.spi`） |
+| `SAPerturbation` | 从当前解生成候选解 | 每轮迭代 | `extends Component`（`oa.api.spi`） |
+| `SACoolingSchedule` | 降低温度 | 每轮迭代后 | `extends Component`（`oa.api.spi`） |
+| `SATerminationCondition` | 判断是否停止 | 每轮迭代后 | `extends TerminationCondition`（`oa.api.spi`） |
 
 ## 📐 接口契约速查
 
@@ -110,18 +110,18 @@ public class MyProblem extends ContinuousProblem {
 ### 任务二：自定义扰动器
 
 ```java
-public class GaussianPerturbation extends SAPerturbation<double[], ContinuousProblem> {
+public class GaussianPerturbation implements SAPerturbation<double[], ContinuousProblem> {
     private ContinuousProblem problem;
     private Random random;
 
     @Override
-    protected void init(ContinuousProblem problem, Random random) {
+    public void init(ContinuousProblem problem, Random random) {
         this.problem = problem;
         this.random = random;
     }
 
     @Override
-    protected double[] perturb(SAState<double[]> state) {
+    public double[] perturb(SAState<double[]> state) {
         double[] x = state.getCurrentXIterator().next();
         double[] newX = problem.copyX(x);
         double temperature = state.getTemperature();
@@ -137,7 +137,7 @@ public class GaussianPerturbation extends SAPerturbation<double[], ContinuousPro
 ### 任务三：自适应冷却策略
 
 ```java
-public class AdaptiveCooling extends SACoolingSchedule<double[], ContinuousProblem> {
+public class AdaptiveCooling implements SACoolingSchedule<double[], ContinuousProblem> {
     private double baseRate;
     private int acceptedCount;
     private int totalCalls;
@@ -149,10 +149,10 @@ public class AdaptiveCooling extends SACoolingSchedule<double[], ContinuousProbl
     }
 
     @Override
-    protected void init(ContinuousProblem problem, Random random) {}
+    public void init(ContinuousProblem problem, Random random) {}
 
     @Override
-    protected double cool(SAState<double[]> state) {
+    public double cool(SAState<double[]> state) {
         totalCalls++;
         if (state.getIsAccepted()) acceptedCount++;
 
@@ -176,7 +176,7 @@ SimulatedAnnealing<double[]> sa =
         new SABasicInitializer(100),
         new SABasicPerturbation(),
         new SABasicCoolingSchedule(0.99, 100),
-        new SABasicTerminationCondition(10000)
+        new MaxCallTerminationCondition<double[]>(10000)
     );
 
 BestRecorder<double[]> recorder = new BestRecorder<>(problem);
@@ -194,7 +194,7 @@ SimulatedAnnealing<double[]> sa =
         new SABasicInitializer(100),
         new SABasicPerturbation(),
         new SABasicCoolingSchedule(0.99, 100),
-        new SABasicTerminationCondition(10000)
+        new MaxCallTerminationCondition<double[]>(10000)
     );
 ```
 
@@ -246,3 +246,4 @@ SimulatedAnnealing<double[]> sa =
 | `core/SimulatedAnnealing.java` | 主循环实现 |
 | `core/SAState.java` | 状态封装 |
 | `components/basiccomponents/` | 内置组件实现 |
+| `../../oa/components/terminationcondition/` | 通用终止条件（MaxCallTerminationCondition 等） |

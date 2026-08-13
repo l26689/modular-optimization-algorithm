@@ -31,22 +31,28 @@
 
 ```
 MOA/
-├── oa.api/                    # 通用优化算法抽象
-│   ├── OptimizationAlgorithm  # 算法基类
-│   ├── Problem                # 问题定义接口（copyX + compare）
-│   ├── Evaluable              # 可评估接口（evaluate）
-│   ├── Recorder               # 记录器接口
-│   ├── State                  # 状态基类
-│   └── Reusable               # 可复用契约
+├── oa.api/                         # 通用优化算法抽象
+│   ├── oa.api.problem/             # 问题定义
+│   │   ├── Problem                 # 问题接口（copyX + compare）
+│   │   └── Evaluable               # 可评估接口（evaluate）
+│   ├── oa.api.optimizationalgorithm/  # 算法框架
+│   │   ├── OptimizationAlgorithm   # 算法基类
+│   │   └── State                   # 状态接口
+│   └── oa.api.spi/                 # 组件服务接口（SPI）
+│       ├── Component               # 统一组件基接口（init）
+│       ├── Initializer             # 初始化器接口
+│       ├── TerminationCondition    # 终止条件接口
+│       ├── Recorder                # 记录器接口
+│       └── Reusable                # 可复用契约
 ├── sa.core/                   # 模拟退火核心
 │   ├── SimulatedAnnealing     # 主循环控制器
 │   ├── SAState                # SA 迭代状态
-│   ├── SAInitializer          # 初始化组件
-│   ├── SAPerturbation         # 扰动组件
-│   ├── SACoolingSchedule      # 冷却策略
-│   └── SATerminationCondition # 终止条件
+│   ├── SAInitializer          # SA 初始化器接口（extends Initializer）
+│   ├── SAPerturbation         # SA 扰动器接口（extends Component）
+│   ├── SACoolingSchedule      # SA 冷却策略接口（extends Component）
+│   └── SATerminationCondition # SA 终止条件接口（extends TerminationCondition）
 ├── sa.components/             # SA 内置实现
-├── oa.components/             # 通用组件（Recorder 等）
+├── oa.components/             # 通用组件（Recorder、TerminationCondition 等）
 └── oa.examples/               # 示例问题
 ```
 
@@ -82,9 +88,9 @@ public interface Evaluable<X, Y> {
 
 绝对值表示优劣差距的大小，使 Metropolis 准则能动态调整接受概率。
 
-### Recorder — 结果记录与评估
+### Recorder — 结果记录与评估（`oa.api.spi`）
 
-`solve()` 方法返回 `void`，优化结果通过 `Recorder` 对外提供：
+`solve()` 方法返回 `void`，优化结果通过 `Recorder` 对外提供。`Recorder` 是 SPI 层的通用接口，会收到 `State` 对象，内部通过 `while (it.hasNext())` 遍历迭代器获取解：
 
 ```java
 public interface Recorder<X, Prob extends Problem<X>, S extends State<X>> {
@@ -93,7 +99,7 @@ public interface Recorder<X, Prob extends Problem<X>, S extends State<X>> {
 ```
 
 内置 Recorder：
-- **BestRecorder** — 记录历史最优解（提供 `getBestX()`）
+- **BestRecorder** — 记录历史最优解（提供 `getBestX()`），内部通过 `compare()` 判断优劣
 - **LastRecorder** — 记录最后一次接受的解（提供 `getLastX()`）
 
 ### State — 算法状态
@@ -109,16 +115,16 @@ SA 扩展为 `SAState<X>`，仅支持迭代器模式（`isArraySupported()` 返�
 - `getTemperature()` — 当前系统温度
 - `getIsAccepted()` — 上一轮是否接受新解
 
-### Reusable — 可复用契约
+### Reusable — 可复用契约（`oa.api.spi`）
 
 实现 `Reusable` 接口的组件支持 `reset()` 操作，可在多次独立优化运行间复用，避免反复创建实例。
 
 ## 🧩 自定义组件
 
-所有组件只需继承对应的抽象类并实现核心方法。以下是一个线性冷却策略示例：
+所有组件只需实现对应的接口并实现核心方法。以下是一个线性冷却策略示例：
 
 ```java
-public class LinearCoolingSchedule extends SACoolingSchedule<double[], ContinuousProblem> {
+public class LinearCoolingSchedule implements SACoolingSchedule<double[], ContinuousProblem> {
     private double coolingRate;
     private int currentIteration;
     private int maxIterations;
@@ -130,12 +136,12 @@ public class LinearCoolingSchedule extends SACoolingSchedule<double[], Continuou
     }
 
     @Override
-    protected void init(ContinuousProblem problem, Random random) {
+    public void init(ContinuousProblem problem, Random random) {
         // 绑定问题实例（此实现无需额外操作）
     }
 
     @Override
-    protected double cool(SAState<double[]> state) {
+    public double cool(SAState<double[]> state) {
         double temperature = state.getTemperature();
         currentIteration++;
         if (currentIteration > maxIterations) {

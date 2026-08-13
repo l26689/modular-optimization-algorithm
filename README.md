@@ -98,9 +98,16 @@ public interface Recorder<X, Prob extends Problem<X>, S extends State<X>> {
 
 ### State — 算法状态
 
-`State<X>` 是状态基类，持有当前解。SA 扩展为 `SAState<X>`，额外包含：
-- `temperature()` — 当前系统温度
-- `isAccepted()` — 上一轮是否接受新解
+`State<X>` 接口定义了对当前解的统一访问契约，提供两种模式：
+
+| 访问方式 | 方法 | 适用场景 |
+|----------|------|----------|
+| **迭代器模式**（通用） | `getCurrentXIterator()` | 常规用法：`while (it.hasNext()) { X x = it.next(); }`，所有解类型 |
+| **数组模式**（高性能） | `getCurrentXs()` | 需先通过 `isArraySupported()` 校验，适合按索引访问 |
+
+SA 扩展为 `SAState<X>`，仅支持迭代器模式（`isArraySupported()` 返回 `false`）。由于 SA 每次迭代创建新实例且只含单个解，SA 组件可直接 `next()` 获取；跨算法通用组件则应使用标准 `while (it.hasNext())` 遍历。额外包含：
+- `getTemperature()` — 当前系统温度
+- `getIsAccepted()` — 上一轮是否接受新解
 
 ### Reusable — 可复用契约
 
@@ -129,7 +136,7 @@ public class LinearCoolingSchedule extends SACoolingSchedule<double[], Continuou
 
     @Override
     protected double cool(SAState<double[]> state) {
-        double temperature = state.temperature();
+        double temperature = state.getTemperature();
         currentIteration++;
         if (currentIteration > maxIterations) {
             currentIteration = 0;

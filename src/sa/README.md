@@ -44,17 +44,26 @@ SimulatedAnnealing<X>
 
 ## 📦 SAState -- 迭代状态封装
 
-`SAState<X>` 是模拟退火算法在单次迭代中的状态快照，封装了三个核心字段：
+`SAState<X>` 是模拟退火算法在单次迭代中的状态快照。它继承自 `State<X>` 接口，该接口提供两种访问当前解的模式：
+
+| 模式 | 方法 | 说明 |
+|------|------|------|
+| **迭代器**（通用） | `getCurrentXIterator()` | 适用于所有解类型。常规用法：`while (it.hasNext()) { X x = it.next(); }` |
+| **数组**（高性能） | `getCurrentXs()` | 需先通过 `isArraySupported()` 校验；`SAState` **不支持此模式**（返回 `false`） |
+
+> **SA 专用简写**：由于 `SAState` 的迭代器始终只包含一个元素（当前解），且每次迭代创建新实例，SA 组件可直接 `getCurrentXIterator().next()` 获取当前解。但编写跨算法通用组件时，必须按迭代器标准方式 `while (it.hasNext())` 遍历。
+
+`SAState` 在基类之上额外封装了以下字段：
 
 | 字段 | 访问方法 | 说明 |
 |------|----------|------|
-| `currentX` | `state.currentX()` | 当前解（只读，不可原地修改） |
-| `temperature` | `state.temperature()` | 当前系统温度 |
-| `isAccepted` | `state.isAccepted()` | 上一轮迭代是否接受了新解 |
+| `currentX` | `state.getCurrentXIterator().next()` | 当前解（只读，不可原地修改） |
+| `temperature` | `state.getTemperature()` | 当前系统温度 |
+| `isAccepted` | `state.getIsAccepted()` | 上一轮迭代是否接受了新解 |
 
 **冷启动规定**：
-- `perturb()` 和 `check()` 的首次调用中，`isAccepted` 为 `false`，表示"尚无历史"
-- `cool()` 的首次调用发生在第一轮迭代**之后**，此时 `isAccepted` 已是 Metropolis 准则的**真实结果**，不是默认 `false`
+- `perturb()` 和 `check()` 的首次调用中，`getIsAccepted()` 为 `false`，表示"尚无历史"
+- `cool()` 的首次调用发生在第一轮迭代**之后**，此时 `getIsAccepted()` 已是 Metropolis 准则的**真实结果**，不是默认 `false`
 
 组件在接收到 `isAccepted = false` 时，应将其视为冷启动信号，采用默认保守策略。
 
@@ -145,9 +154,9 @@ public abstract class SAPerturbation<X, Prob extends Problem<X>> {
 
 **核心方法**：
 - `perturb(SAState<X> state)` -- 生成候选解
-  - `state.currentX()` -- 当前解（只读，不可原地修改）
-  - `state.temperature()` -- 当前温度（可用于控制扰动幅度）
-  - `state.isAccepted()` -- 上一轮接受结果（首次为 `false`，详见 [SAState](#sastate----迭代状态封装)）
+  - `state.getCurrentXIterator().next()` -- 当前解（只读，不可原地修改）
+  - `state.getTemperature()` -- 当前温度（可用于控制扰动幅度）
+  - `state.getIsAccepted()` -- 上一轮接受结果（首次为 `false`，详见 [SAState](#sastate----迭代状态封装)）
 
 **要求**：必须返回全新对象，不得原地修改 `currentX`。
 
@@ -166,7 +175,7 @@ public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
 - `cool(SAState<X> state)` -- 计算下一轮温度
   - 每次迭代调用一次，调用次数等于算法总迭代次数
   - 经典几何冷却：`temperature *= coolingRate`（`coolingRate` 略小于 1）
-  - 注意：`cool()` 的首次调用发生在第一轮迭代**之后**，此时 `isAccepted` 已是真实结果（详见 [SAState](#sastate----迭代状态封装)）
+  - 注意：`cool()` 的首次调用发生在第一轮迭代**之后**，此时 `state.getIsAccepted()` 已是真实结果（详见 [SAState](#sastate----迭代状态封装)）
 
 ### 4. SATerminationCondition -- 终止条件
 
@@ -183,7 +192,7 @@ public abstract class SATerminationCondition<X, Prob extends Problem<X>> {
 - `check(SAState<X> state)` -- 判断是否终止
   - 返回 `true` 表示满足终止条件，算法停止
   - 常见实现：最大迭代次数、温度低于阈值、连续未接受等
-  - 首次调用时 `isAccepted` 为 `false`（详见 [SAState](#sastate----迭代状态封装)）
+  - 首次调用时 `state.getIsAccepted()` 为 `false`（详见 [SAState](#sastate----迭代状态封装)）
 
 ## 🧩 自定义组件
 
@@ -208,7 +217,7 @@ public class LinearCoolingSchedule extends SACoolingSchedule<double[], Continuou
 
     @Override
     protected double cool(SAState<double[]> state) {
-        double temperature = state.temperature();
+        double temperature = state.getTemperature();
         currentIteration++;
         if (currentIteration > maxIterations) {
             currentIteration = 0;
@@ -291,7 +300,7 @@ public class MyProblem extends ContinuousProblem {
 | `true` | 满足终止条件，算法将停止迭代 |
 | `false` | 继续迭代 |
 
-- 首次调用时 `state.isAccepted()` 为 `false`（冷启动），不应据此决定是否终止
+- 首次调用时 `state.getIsAccepted()` 为 `false`（冷启动），不应据此决定是否终止
 - 实现可通过内部计数器统计调用次数来推导迭代次数
 
 ## 🔮 未来演进

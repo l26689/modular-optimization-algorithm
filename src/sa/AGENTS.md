@@ -51,13 +51,24 @@ double cool(SAState<X> state);
 boolean check(SAState<X> state);
 ```
 
-### SAState 提供的信息
+`State<X>` 接口提供两种访问当前解的模式：
+
+| 模式 | 方法 | 适用场景 |
+|------|------|----------|
+| **迭代器**（通用） | `getCurrentXIterator()` | 所有解类型，常规用法：`while (it.hasNext()) { X x = it.next(); }` |
+| **数组**（高性能） | `getCurrentXs()` | 需先 `isArraySupported()` 校验；`SAState` **不支持** |
+
+`SAState` 在基类之上额外封装了 SA 特有的字段：
 
 ```java
-state.currentX()      // 当前解（只读）
-state.temperature()   // 当前温度
-state.isAccepted()    // 上一轮是否接受新解（见下方冷启动说明）
+// SA 专用简写：SAState 的迭代器始终只包含一个元素（当前解），
+// 每次迭代创建新 SAState 实例，因此可直接 next() 无需 hasNext() 循环
+state.getCurrentXIterator().next()  // 当前解（只读）
+state.getTemperature()              // 当前温度
+state.getIsAccepted()               // 上一轮是否接受新解（见下方冷启动说明）
 ```
+
+> **⚠️ 重要**：`next()` 直接调用是 SA 组件的特权。若编写同时支持 SA 和其他算法（如群体算法）的通用组件，必须按迭代器标准方式使用 `while (it.hasNext())` 遍历，因为其他算法的迭代器可能包含多个元素。
 
 **冷启动细节**：
 - `perturb()` 和 `check()` 的首次调用中，`isAccepted` 为 `false`（表示"尚无历史"）
@@ -111,9 +122,9 @@ public class GaussianPerturbation extends SAPerturbation<double[], ContinuousPro
 
     @Override
     protected double[] perturb(SAState<double[]> state) {
-        double[] x = state.currentX();
+        double[] x = state.getCurrentXIterator().next();
         double[] newX = problem.copyX(x);
-        double temperature = state.temperature();
+        double temperature = state.getTemperature();
 
         for (int i = 0; i < newX.length; i++) {
             newX[i] += random.nextGaussian() * temperature * 0.1;
@@ -143,14 +154,14 @@ public class AdaptiveCooling extends SACoolingSchedule<double[], ContinuousProbl
     @Override
     protected double cool(SAState<double[]> state) {
         totalCalls++;
-        if (state.isAccepted()) acceptedCount++;
+        if (state.getIsAccepted()) acceptedCount++;
 
         double rate = baseRate;
         if (totalCalls > 100) {
             double acceptRate = (double) acceptedCount / totalCalls;
             rate = acceptRate > 0.5 ? 0.95 : 0.99;
         }
-        return state.temperature() * rate;
+        return state.getTemperature() * rate;
     }
 }
 ```
@@ -192,7 +203,7 @@ SimulatedAnnealing<double[]> sa =
 | 约束 | 说明 |
 |------|------|
 | 冷启动 | 详见上方 SAState 冷启动说明 |
-| 不可变性 | 不得原地修改 `state.currentX()`，必须返回新对象 |
+| 不可变性 | 不得原地修改 `state.getCurrentXIterator().next()` 获取的解，必须返回新对象 |
 | 纯函数 | `compare()` 内部调用的评估逻辑必须是纯函数，相同输入 -> 相同输出。若实现了 `Evaluable`，`evaluate()` 也必须是纯函数且每次返回独立新对象 |
 | 随机数 | 使用注入的 `Random`，不得自行创建 |
 | 线程安全 | 框架单线程运行，组件内部状态需自行同步 |
@@ -222,7 +233,7 @@ SimulatedAnnealing<double[]> sa =
 | `true` | 满足终止条件，算法将停止迭代 |
 | `false` | 继续迭代 |
 
-- 首次调用时 `state.isAccepted()` 为 `false`（冷启动），不应据此决定是否终止
+- 首次调用时 `state.getIsAccepted()` 为 `false`（冷启动），不应据此决定是否终止
 - 实现可通过内部计数器统计调用次数来推导迭代次数
 
 ## 📚 相关文件

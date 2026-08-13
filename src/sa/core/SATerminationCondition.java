@@ -58,12 +58,12 @@ public abstract class SATerminationCondition<X,Prob extends Problem<X>> {
      * 本方法在每次迭代结束时被调用一次（与冷却策略调用时机相同），
      * 传入封装了当前迭代状态的 {@link SAState} 对象：
      * <ul>
-     *   <li>{@code state.currentX()} - 当前解（只读，不可原地修改）</li>
-     *   <li>{@code state.temperature()} - 当前温度</li>
-     *   <li>{@code state.isAccepted()} - 刚结束的本次迭代的接受结果，
-     *       其值始终真实（包括首次调用后的第一轮结果）</li>
-     * </ul>
-     * 首次调用时 {@code state.isAccepted()} 为 {@code false}，表示"尚无历史"。
+     *   <li>{@code state.getCurrentXIterator().next()} - 当前解（只读，不可原地修改）</li>
+ *   <li>{@code state.getTemperature()} - 当前温度</li>
+ *   <li>{@code state.getIsAccepted()} - 刚结束的本次迭代的接受结果，
+ *       其值始终真实（包括首次调用后的第一轮结果）</li>
+ * </ul>
+ * 首次调用时 {@code state.getIsAccepted()} 为 {@code false}，表示"尚无历史"。
      *
      * @param state 封装了当前迭代状态的 {@link SAState} 对象，包含当前解、温度和接受标志
      * @return {@code true} 表示满足终止条件，算法将停止；{@code false} 表示继续迭代

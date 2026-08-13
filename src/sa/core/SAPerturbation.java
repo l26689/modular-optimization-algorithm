@@ -58,14 +58,14 @@ public abstract class SAPerturbation<X, Prob extends Problem<X>> {
      * <p>
      * 算法每次迭代会调用本方法一次，传入封装了当前迭代状态的 {@link SAState} 对象：
      * <ul>
-     *   <li>{@code state.currentX()} - 当前解（只读，不可原地修改）</li>
-     *   <li>{@code state.temperature()} - 当前系统温度（可用于控制扰动幅度）</li>
-     *   <li>{@code state.isAccepted()} - 上一轮迭代的接受结果；首次迭代时为 {@code false}，
-     *       表示"尚无历史"，实现应使用默认扰动强度</li>
-     * </ul>
+     *   <li>{@code state.getCurrentXIterator().next()} - 当前解（只读，不可原地修改）</li>
+ *   <li>{@code state.getTemperature()} - 当前系统温度（可用于控制扰动幅度）</li>
+ *   <li>{@code state.getIsAccepted()} - 上一轮迭代的接受结果；首次迭代时为 {@code false}，
+ *       表示"尚无历史"，实现应使用默认扰动强度</li>
+ * </ul>
  *
  * @param state 封装了当前迭代状态的 {@link SAState} 对象，包含当前解、温度和接受标志
- * @return 全新的候选解，必须与 {@code state.currentX()} 相互独立
+ * @return 全新的候选解，必须与 {@code state.getCurrentXIterator().next()} 相互独立
      */
     protected abstract X perturb(SAState<X> state);
 }

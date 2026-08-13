@@ -223,7 +223,7 @@ public class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,SA
      *   <li>{@code temperature} - 当前系统温度</li>
      *   <li>{@code isAccepted} - 上一轮迭代是否接受了新解</li>
      * </ul>
-     * 组件应通过 {@code state.currentX()}、{@code state.temperature()}、{@code state.isAccepted()} 访问这些信息。
+     * 组件应通过 {@code state.getCurrentXIterator().next()}、{@code state.getTemperature()}、{@code state.getIsAccepted()} 访问这些信息。
      *
      * <h3>线程安全</h3>
      * 本方法未做任何同步，默认在单线程下使用。如果在多线程环境中调用，

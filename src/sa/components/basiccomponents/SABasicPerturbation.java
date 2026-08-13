@@ -6,7 +6,7 @@ import oa.examples.continuousproblem.ContinuousProblem;
 import sa.core.SAPerturbation;
 import sa.core.SAState;
 
-public class SABasicPerturbation extends SAPerturbation<double[],ContinuousProblem> {
+public final class SABasicPerturbation implements SAPerturbation<double[],ContinuousProblem> {
 
     private double[] lowerBounds;
     private double[] upperBounds;
@@ -14,7 +14,7 @@ public class SABasicPerturbation extends SAPerturbation<double[],ContinuousProbl
     private Random random;
     
     @Override
-    protected void init(ContinuousProblem problem,Random random) {
+    public void init(ContinuousProblem problem,Random random) {
         this.lowerBounds = problem.getLowerBounds();
         this.upperBounds = problem.getUpperBounds();
         this.problem = problem;
@@ -22,7 +22,7 @@ public class SABasicPerturbation extends SAPerturbation<double[],ContinuousProbl
     }
     
     @Override
-    protected double[] perturb(SAState<double[]> state) {
+    public double[] perturb(SAState<double[]> state) {
 
         double[] x = state.getCurrentXIterator().next();
         

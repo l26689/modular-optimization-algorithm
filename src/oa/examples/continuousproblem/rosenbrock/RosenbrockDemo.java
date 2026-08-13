@@ -1,6 +1,7 @@
 package oa.examples.continuousproblem.rosenbrock;
 
 import oa.components.Recoders.*;
+import oa.components.terminationcondition.MaxCallTerminationCondition;
 import sa.components.basiccomponents.*;
 import sa.core.SimulatedAnnealing;
 
@@ -13,9 +14,9 @@ public class RosenbrockDemo {
             new SABasicInitializer(100),
             new SABasicPerturbation(),
             new SABasicCoolingSchedule(0.99,100),
-            new SABasicTerminationCondition(10000)
+            new MaxCallTerminationCondition<double[]>(10000)
         );
-        LastRecorder<double[],Double> recorder = new LastRecorder<double[],Double>(prob);
+        LastRecorder<double[],Double> recorder = new LastRecorder<>(prob);
         msa.solve(recorder);
         System.out.println(prob.evaluate(recorder.getLastX()));
         

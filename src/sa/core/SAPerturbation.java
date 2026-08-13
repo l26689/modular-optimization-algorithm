@@ -2,7 +2,8 @@ package sa.core;
 
 import java.util.Random;
 
-import oa.api.Problem;
+import oa.api.problem.Problem;
+import oa.api.spi.Component;
 
 /**
  * 扰动器，定义如何从当前解生成邻域候选解。
@@ -39,7 +40,7 @@ import oa.api.Problem;
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class SAPerturbation<X, Prob extends Problem<X>> {
+public interface SAPerturbation<X, Prob extends Problem<X>> extends Component<X,Prob,SAState<X>> {
 
     /**
      * 绑定问题实例，使扰动器获取问题的维度、边界等元数据。
@@ -51,7 +52,7 @@ public abstract class SAPerturbation<X, Prob extends Problem<X>> {
      *               （如生成随机扰动、随机选择维度等），以保证结果可复现；不应自行创建新的 {@link Random} 实例
      * @throws NullPointerException 如果 problem 为 null
      */
-    protected abstract void init(Prob problem,Random random);
+    void init(Prob problem,Random random);
 
     /**
      * 生成当前解的一个邻域候选解。
@@ -67,5 +68,5 @@ public abstract class SAPerturbation<X, Prob extends Problem<X>> {
  * @param state 封装了当前迭代状态的 {@link SAState} 对象，包含当前解、温度和接受标志
  * @return 全新的候选解，必须与 {@code state.getCurrentXIterator().next()} 相互独立
      */
-    protected abstract X perturb(SAState<X> state);
+    X perturb(SAState<X> state);
 }

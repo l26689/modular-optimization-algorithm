@@ -1,4 +1,4 @@
-package oa.api;
+package oa.api.problem;
 /**
  * 可评估的接口，用于评估解的目标函数值。
  * @param <Y> 目标函数值的类型

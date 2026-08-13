@@ -1,10 +1,12 @@
 package oa.components.Recoders;
 
-import oa.api.Recorder;
-import java.util.Iterator;
+import oa.api.optimizationalgorithm.State;
 
-import oa.api.Problem;
-import oa.api.State;
+import java.util.Iterator;
+import java.util.Random;
+
+import oa.api.problem.Problem;
+import oa.api.spi.Recorder;
 
 
 public class LastRecorder<X,Y> implements Recorder<X,Problem<X>,State<X>> {

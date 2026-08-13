@@ -1,6 +1,7 @@
 package oa.examples.continuousproblem.myproblem;
 
 import oa.components.Recoders.*;
+import oa.components.terminationcondition.MaxCallTerminationCondition;
 import sa.components.basiccomponents.*;
 import sa.core.SimulatedAnnealing;
 
@@ -13,9 +14,10 @@ public class MyProblemDemo {
             new SABasicInitializer(100),
             new SABasicPerturbation(),
             new SABasicCoolingSchedule(0.99,100),
-            new SABasicTerminationCondition(10000)
+            new MaxCallTerminationCondition<double[]>(10000)
         );
-        BestRecorder<double[]> recorder = new BestRecorder<>(new MyProblem(2));
+        BestRecorder<double[]> recorder = new BestRecorder<>(prob);
+
         msa.solve(recorder);
         System.out.println(prob.evaluate(recorder.getBestX()));
         

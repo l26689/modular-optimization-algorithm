@@ -2,7 +2,8 @@ package sa.core;
 
 import java.util.Random;
 
-import oa.api.Problem;
+import oa.api.problem.Problem;
+import oa.api.spi.Component;
 
 /**
  * 冷却调度策略，定义温度如何随迭代逐步降低。
@@ -26,7 +27,7 @@ import oa.api.Problem;
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
+public interface SACoolingSchedule<X, Prob extends Problem<X>> extends Component<X,Prob,SAState<X>> {
 
     /**
      * 绑定问题实例，使冷却策略可获取问题的维度等元数据（多数冷却策略无需此信息，
@@ -39,7 +40,8 @@ public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
      *               （如自适应冷却中的随机采样），以保证结果可复现；不应自行创建新的 {@link Random} 实例
      * @throws NullPointerException 如果 problem 为 null
      */
-    protected abstract void init(Prob problem,Random random);
+    @Override
+    public abstract void init(Prob problem,Random random);
 
     /**
      * 计算下一轮的系统温度。
@@ -61,5 +63,5 @@ public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
      * @param state 封装了当前迭代状态的 {@link SAState} 对象，包含当前解、当前温度和接受标志
      * @return 新的温度值，其合理性由实现类自行保证
      */
-    protected abstract double cool(SAState<X> state);
+    public abstract double cool(SAState<X> state);
 }

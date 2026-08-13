@@ -2,7 +2,7 @@ package sa.core;
 
 import java.util.Iterator;
 
-import oa.api.State;
+import oa.api.optimizationalgorithm.State;
 
 /**
  * 模拟退算法的迭代状态封装。
@@ -24,7 +24,7 @@ import oa.api.State;
  *
  * @param <X> 解的表示类型（例如 {@code double[]}、{@code int[]}）
  */
-public class SAState<X> implements State<X> {
+public final class SAState<X> implements State<X> {
     private class CurrentXIterator implements Iterator<X>{
         boolean hasNext = true;
         @Override

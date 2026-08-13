@@ -1,10 +1,11 @@
 package oa.components.Recoders;
 
 import java.util.Iterator;
+import java.util.Random;
 
-import oa.api.Problem;
-import oa.api.Recorder;
-import oa.api.State;
+import oa.api.optimizationalgorithm.State;
+import oa.api.problem.Problem;
+import oa.api.spi.Recorder;
 
 public class BestRecorder<X> implements Recorder<X,Problem<X>,State<X>> {
     private X bestX;
@@ -13,6 +14,7 @@ public class BestRecorder<X> implements Recorder<X,Problem<X>,State<X>> {
     public BestRecorder(Problem<X> prob) {
         this.prob = prob;
     }
+
     @Override
     public void record(State<X> state) {
         if(state.isArraySupported()) {

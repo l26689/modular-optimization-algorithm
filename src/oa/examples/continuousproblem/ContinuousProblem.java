@@ -1,7 +1,7 @@
 package oa.examples.continuousproblem;
 
-import oa.api.Problem;
-import oa.api.Evaluable;
+import oa.api.problem.Evaluable;
+import oa.api.problem.Problem;
 
 public abstract class ContinuousProblem implements Problem<double[]>,Evaluable<double[],Double>{
     protected double[] lowerBounds;

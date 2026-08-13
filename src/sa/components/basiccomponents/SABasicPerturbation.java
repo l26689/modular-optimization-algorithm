@@ -23,7 +23,8 @@ public class SABasicPerturbation extends SAPerturbation<double[],ContinuousProbl
     
     @Override
     protected double[] perturb(SAState<double[]> state) {
-        double[] x = state.currentX();
+
+        double[] x = state.getCurrentXIterator().next();
         
         double[] newX = problem.copyX(x);
         

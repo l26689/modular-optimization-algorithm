@@ -1,5 +1,7 @@
 package sa.core;
 
+import java.util.Iterator;
+
 import oa.api.State;
 
 /**
@@ -11,14 +13,10 @@ import oa.api.State;
  *
  * <h3>状态字段说明</h3>
  * <ul>
- *   <li>{@code currentX} - 当前解（继承自父类），通过 {@link #currentX()} 访问</li>
- *   <li>{@code temperature} - 当前系统温度，通过 {@link #temperature()} 访问</li>
- *   <li>{@code isAccepted} - 上一轮迭代是否接受了新解，通过 {@link #isAccepted()} 访问</li>
+ *   <li>{@link currentXIterator} - 当前解的迭代器，用于直接访问解元素</li>
+ *   <li>{@link temperature} - 当前系统温度，用于控制扰动幅度和接受概率</li>
+ *   <li>{@link isAccepted} - 上一轮迭代是否接受了新解</li>
  * </ul>
- *
- * <h3>不可变性</h3>
- * 本类所有字段均为 {@code final}，创建后不可修改，确保组件接收到的状态信息
- * 在单次迭代内保持一致，避免并发或引用传递导致的意外修改。
  *
  * <h3>冷启动约定</h3>
  * 首次迭代前，主算法会将 {@code isAccepted} 初始化为 {@code false}，
@@ -26,11 +24,28 @@ import oa.api.State;
  *
  * @param <X> 解的表示类型（例如 {@code double[]}、{@code int[]}）
  */
-public class SAState<X> extends State<X> {
+public class SAState<X> implements State<X> {
+    private class CurrentXIterator implements Iterator<X>{
+        boolean hasNext = true;
+        @Override
+        public boolean hasNext() {
+            return hasNext;
+        }
+
+        @Override
+        public X next() {
+            hasNext = false;
+            return currentX;
+        }
+    }
+
+    private X currentX;
+
     /** 当前系统温度，用于控制扰动幅度和接受概率 */
-    private final double temperature;
+    private double temperature;
     /** 上一轮迭代是否接受了新解；首次迭代时为 {@code false} */
-    private final boolean isAccepted;
+    private boolean isAccepted;
+    private CurrentXIterator currentXIterator;
 
     /**
      * 构造一个模拟退火迭代状态对象。
@@ -40,33 +55,40 @@ public class SAState<X> extends State<X> {
      * @param isAccepted  上一轮迭代是否接受了新解；首次迭代时应为 {@code false}
      */
     public SAState(X currentX, double temperature, boolean isAccepted) {
-        super(currentX);
+        this.currentX = currentX;
+        currentXIterator = new CurrentXIterator();
         this.temperature = temperature;
         this.isAccepted = isAccepted;
     }
 
-    /**
-     * 获取当前系统温度。
-     * <p>
-     * 温度值影响扰动器的步长选择和 Metropolis 接受准则的概率计算。
-     * 随着迭代进行，温度通常逐步降低（由冷却策略控制）。
-     *
-     * @return 当前温度值
-     */
-    public double temperature() { return temperature; }
 
-    /**
-     * 获取上一轮迭代的接受结果。
-     * <p>
-     * 该值反映刚结束的迭代中新候选解是否被接受：
-     * <ul>
-     *   <li>{@code true} - 新解被接受（优于当前解或按 Metropolis 准则接受）</li>
-     *   <li>{@code false} - 新解未被接受</li>
-     * </ul>
-     * 首次迭代时此值固定为 {@code false}，表示"尚无历史"，
-     * 组件应将此视为冷启动信号，使用默认策略。
-     *
-     * @return 上一轮迭代是否接受了新解
-     */
-    public boolean isAccepted() { return isAccepted; }
+    public void set(X currentX, double temperature, boolean isAccepted) {
+        this.currentX = currentX;
+        currentXIterator.hasNext = true;
+        this.temperature = temperature;
+        this.isAccepted = isAccepted;
+    }
+
+    @Override
+    public Iterator<X> getCurrentXIterator() {
+        return currentXIterator;
+    }
+
+    @Override
+    public X[] getCurrentXs() {
+        throw new UnsupportedOperationException("Unsupported method 'getCurrentXs'");
+    }
+
+    @Override
+    public boolean isArraySupported() {
+        return false;
+    }
+
+    public double getTemperature() {
+        return temperature;
+    }
+    public boolean getIsAccepted() {
+        return isAccepted;
+    }
+
 }

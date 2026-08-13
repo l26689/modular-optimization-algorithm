@@ -24,7 +24,7 @@ public class SABasicCoolingSchedule extends SACoolingSchedule<double[],Continuou
     
     @Override
     public double cool(SAState<double[]> state) {
-        double temperature = state.temperature();
+        double temperature = state.getTemperature();
         currentIteration++;
         if(currentIteration > maxIterations) {
             currentIteration = 0;

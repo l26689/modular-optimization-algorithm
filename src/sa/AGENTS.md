@@ -22,7 +22,6 @@ MSA 是一个**模块化优化算法框架**，将模拟退火拆解为四个可
 | 参数 | 含义 | 典型值 |
 |------|------|--------|
 | `X` | 解的表示类型 | `double[]`、`int[]`、自定义数据结构 |
-| `Y` | 目标函数返回值类型（用于 `Evaluable<X, Y>`） | `Double`（单目标）、`double[]`（多目标） |
 | `Prob` | 问题类型，必须实现 `Problem<X>` | `ContinuousProblem`、自定义问题类 |
 
 示例：`SAPerturbation<double[], ContinuousProblem>` 表示一个处理连续空间扰动器。

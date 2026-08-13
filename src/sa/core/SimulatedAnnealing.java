@@ -240,17 +240,27 @@ public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem
         X newX = problem.copyX(currentX);
 
         boolean isAccepted = false;
+        SAState<X> state = new SAState<X>(currentX,temperature,isAccepted);
 
-        while (!terminationCondition.check(new SAState<X>(currentX,temperature,isAccepted))) {
+        recorder.record(state);
 
-            newX = perturbation.perturb(new SAState<X>(currentX,temperature,isAccepted));
+        while (!terminationCondition.check(state)) {
+
+            newX = perturbation.perturb(state);
 
             isAccepted = random.nextDouble()<Math.exp(problem.compare(newX,currentX)/temperature);
             if(isAccepted){
                 currentX = newX;
             }
-            recorder.record(new SAState<X>(currentX,temperature,isAccepted));
-            temperature = coolingSchedule.cool(new SAState<X>(currentX,temperature,isAccepted));
+
+            state.set(currentX,temperature,isAccepted);
+
+            
+            temperature = coolingSchedule.cool(state);
+
+            state.set(currentX,temperature,isAccepted);
+            
+            recorder.record(state);
         }
     }
 }

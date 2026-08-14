@@ -1,4 +1,4 @@
-package sa.core;
+package sa.BasicSA;
 
 import java.util.Random;
 
@@ -6,6 +6,10 @@ import oa.api.optimizationalgorithm.OptimizationAlgorithm;
 import oa.api.problem.Problem;
 import oa.api.spi.Recorder;
 import oa.api.spi.TerminationCondition;
+import sa.core.SACoolingSchedule;
+import sa.core.SAInitializer;
+import sa.core.SAPerturbation;
+import sa.core.SAState;
 
 /**
  * 模块化模拟退火算法的主协调器。

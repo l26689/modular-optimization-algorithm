@@ -4,6 +4,7 @@ import java.util.Random;
 
 import oa.api.problem.Problem;
 import oa.api.spi.Initializer;
+import sa.BasicSA.SimulatedAnnealing;
 
 /**
  * 初始化器，负责定义算法的起始状态：初始解和初始温度。

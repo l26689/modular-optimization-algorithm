@@ -5,26 +5,33 @@ import java.util.Iterator;
 import oa.api.optimizationalgorithm.State;
 
 /**
- * 模拟退算法的迭代状态封装。
+ * 模拟退火算法的迭代状态封装。
  * <p>
- * 本类继承自 {@link State}，在基础解信息之上扩展了模拟退火特有的状态字段：
- * 温度和接受标志。主算法在每次迭代中创建此对象，并将其传递给各组件
- * （扰动器、冷却策略、终止条件），使组件能获取当前迭代的完整上下文。
+ * 本类实现自 {@link State}，在基础解信息之上扩展了模拟退火特有的状态字段：
+ * 温度和接受标志。主算法在每次求解（solve）中创建<b>一个</b>本类实例，
+ * 在各轮迭代中通过 {@link #set(Object, double, boolean)} 更新状态，
+ * 并将其传递给各组件（扰动器、冷却策略、终止条件），使组件能获取当前迭代的完整上下文。
  *
  * <h3>状态字段说明</h3>
  * <ul>
- *   <li>{@link currentXIterator} - 当前解的迭代器，用于直接访问解元素</li>
- *   <li>{@link temperature} - 当前系统温度，用于控制扰动幅度和接受概率</li>
- *   <li>{@link isAccepted} - 上一轮迭代是否接受了新解</li>
+ *   <li>{@code currentXIterator} - 当前解的迭代器，用于直接访问解元素</li>
+ *   <li>{@link #temperature} - 当前系统温度，用于控制扰动幅度和接受概率</li>
+ *   <li>{@link #isAccepted} - 上一轮迭代是否接受了新解</li>
  * </ul>
  *
  * <h3>冷启动约定</h3>
  * 首次迭代前，主算法会将 {@code isAccepted} 初始化为 {@code false}，
  * 表示"尚无历史"。各组件应能正确处理此初始状态。
  *
+ * <h3>使用约束</h3>
+ * 本实例在整个求解过程中被复用，其内部状态（包括 {@code currentX} 引用、
+ * 迭代器状态）会随迭代推进而变化。各组件<b>不应</b>保存对本实例或其
+ * {@link #getCurrentXIterator() 迭代器} 的引用跨迭代使用。
+ * 如需持久化保存当前解，组件必须对解对象进行<b>深拷贝</b>，而非保存引用。
+ *
  * @param <X> 解的表示类型（例如 {@code double[]}、{@code int[]}）
  */
-public final class SAState<X> implements State<X> {
+public class SAState<X> implements State<X> {
     private class CurrentXIterator implements Iterator<X>{
         boolean hasNext = true;
         @Override
@@ -64,18 +71,18 @@ public final class SAState<X> implements State<X> {
 
     public void set(X currentX, double temperature, boolean isAccepted) {
         this.currentX = currentX;
-        currentXIterator.hasNext = true;
         this.temperature = temperature;
         this.isAccepted = isAccepted;
     }
 
     @Override
     public Iterator<X> getCurrentXIterator() {
+        currentXIterator.hasNext = true;
         return currentXIterator;
     }
 
     @Override
-    public X[] getCurrentXs() {
+    public final X[] getCurrentXs() {
         throw new UnsupportedOperationException("Unsupported method 'getCurrentXs'");
     }
 
@@ -84,10 +91,10 @@ public final class SAState<X> implements State<X> {
         return false;
     }
 
-    public double getTemperature() {
+    public final double getTemperature() {
         return temperature;
     }
-    public boolean getIsAccepted() {
+    public final boolean getIsAccepted() {
         return isAccepted;
     }
 

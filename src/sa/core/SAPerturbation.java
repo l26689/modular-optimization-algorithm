@@ -4,6 +4,7 @@ import java.util.Random;
 
 import oa.api.problem.Problem;
 import oa.api.spi.Component;
+import sa.BasicSA.SimulatedAnnealing;
 
 /**
  * 扰动器，定义如何从当前解生成邻域候选解。

@@ -2,8 +2,8 @@ package oa.examples.continuousproblem.myproblem;
 
 import oa.components.Recoders.*;
 import oa.components.terminationcondition.MaxCallTerminationCondition;
+import sa.BasicSA.SimulatedAnnealing;
 import sa.components.basiccomponents.*;
-import sa.core.SimulatedAnnealing;
 
 public class MyProblemDemo {
     void main() {

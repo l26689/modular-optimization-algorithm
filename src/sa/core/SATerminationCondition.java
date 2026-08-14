@@ -4,6 +4,7 @@ import java.util.Random;
 
 import oa.api.problem.Problem;
 import oa.api.spi.TerminationCondition;
+import sa.BasicSA.SimulatedAnnealing;
 
 /**
  * SA 终止条件接口，判断模拟退火算法何时停止迭代。

@@ -20,4 +20,4 @@ out/
 Thumbs.db
 
 # 测试输出
-/src/sa/test/
+/src/test/

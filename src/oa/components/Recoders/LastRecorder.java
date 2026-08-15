@@ -2,8 +2,6 @@ package oa.components.Recoders;
 
 import oa.api.optimizationalgorithm.State;
 
-import java.util.Iterator;
-
 import oa.api.problem.Problem;
 import oa.api.spi.Recorder;
 
@@ -17,17 +15,8 @@ public class LastRecorder<X,Y> implements Recorder<X,Problem<X>,State<X>> {
     }
     @Override
     public void record(State<X> state) {
-        if(state.isArraySupported()) {
-            X[] currentXs = state.getCurrentXs();
-            lastX = currentXs[currentXs.length - 1];
-        }
-        else {
-            Iterator<X> currentXIterator = state.getCurrentXIterator();
-            while(currentXIterator.hasNext()) {
-                lastX = currentXIterator.next();
-            }
-        }
-
+        X[] currentXs = state.getCurrentXs();
+        lastX = currentXs[currentXs.length - 1];
     }
     public X getLastX() {
         return prob.copyX(lastX);

@@ -1,8 +1,5 @@
 package oa.api.optimizationalgorithm;
 
-import java.util.Iterator;
-
-import oa.api.problem.Problem;
 
 /**
  * 优化算法迭代状态的基类接口。
@@ -37,9 +34,5 @@ import oa.api.problem.Problem;
  * @param <X> 解的表示类型（例如 {@code double[]}、{@code int[]} 或自定义数据结构）
  */
 public interface State<X> {
-    public Iterator<X> getCurrentXIterator();
-
     public X[] getCurrentXs();
-
-    public boolean isArraySupported();
 }

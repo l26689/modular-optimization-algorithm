@@ -24,7 +24,7 @@ public final class SABasicPerturbation implements SAPerturbation<double[],Contin
     @Override
     public double[] perturb(SAState<double[]> state) {
 
-        double[] x = state.getCurrentXIterator().next();
+        double[] x = state.getCurrentXs()[0];
         
         double[] newX = problem.copyX(x);
         

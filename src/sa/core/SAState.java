@@ -1,6 +1,6 @@
 package sa.core;
 
-import java.util.Iterator;
+import java.lang.reflect.Array;
 
 import oa.api.optimizationalgorithm.State;
 
@@ -32,27 +32,12 @@ import oa.api.optimizationalgorithm.State;
  * @param <X> 解的表示类型（例如 {@code double[]}、{@code int[]}）
  */
 public class SAState<X> implements State<X> {
-    private class CurrentXIterator implements Iterator<X>{
-        boolean hasNext = true;
-        @Override
-        public boolean hasNext() {
-            return hasNext;
-        }
-
-        @Override
-        public X next() {
-            hasNext = false;
-            return currentX;
-        }
-    }
-
-    private X currentX;
+    private X[] currentXs;
 
     /** 当前系统温度，用于控制扰动幅度和接受概率 */
     private double temperature;
     /** 上一轮迭代是否接受了新解；首次迭代时为 {@code false} */
     private boolean isAccepted;
-    private CurrentXIterator currentXIterator;
 
     /**
      * 构造一个模拟退火迭代状态对象。
@@ -62,33 +47,22 @@ public class SAState<X> implements State<X> {
      * @param isAccepted  上一轮迭代是否接受了新解；首次迭代时应为 {@code false}
      */
     public SAState(X currentX, double temperature, boolean isAccepted) {
-        this.currentX = currentX;
-        currentXIterator = new CurrentXIterator();
+        this.currentXs = (X[]) Array.newInstance(currentX.getClass(), 1);
+        this.currentXs[0] = currentX;
         this.temperature = temperature;
         this.isAccepted = isAccepted;
     }
 
 
     public void set(X currentX, double temperature, boolean isAccepted) {
-        this.currentX = currentX;
+        this.currentXs[0] = currentX;
         this.temperature = temperature;
         this.isAccepted = isAccepted;
     }
 
     @Override
-    public Iterator<X> getCurrentXIterator() {
-        currentXIterator.hasNext = true;
-        return currentXIterator;
-    }
-
-    @Override
     public final X[] getCurrentXs() {
-        throw new UnsupportedOperationException("Unsupported method 'getCurrentXs'");
-    }
-
-    @Override
-    public boolean isArraySupported() {
-        return false;
+        return currentXs;
     }
 
     public final double getTemperature() {

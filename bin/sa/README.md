@@ -92,7 +92,6 @@ src/sa/
 |-- components/
 |   +-- basiccomponents/           # 内置基础实现
 |       |-- SABasicInitializer     # 实现 SAInitializer
-|       |-- SABasicPerturbation    # 实现 SAPerturbation
 |       +-- SABasicCoolingSchedule # 实现 SACoolingSchedule
 |-- AGENTS.md                      # AI Agent 使用指南
 +-- README.md                      # 本文档
@@ -109,6 +108,7 @@ src/sa/
 import oa.examples.continuousproblem.myproblem.MyProblem;
 import oa.components.Recoders.BestRecorder;
 import oa.components.terminationcondition.MaxCallTerminationCondition;
+import oa.examples.continuousproblem.ContinuousUniformSearch;
 import sa.core.SimulatedAnnealing;
 import sa.components.basiccomponents.*;
 
@@ -120,7 +120,7 @@ SimulatedAnnealing<double[]> sa =
     new SimulatedAnnealing<>(
         problem,
         new SABasicInitializer(100),
-        new SABasicPerturbation(),
+        new ContinuousUniformSearch(),
         new SABasicCoolingSchedule(0.99, 100),
         new MaxCallTerminationCondition<double[]>(10000)
     );

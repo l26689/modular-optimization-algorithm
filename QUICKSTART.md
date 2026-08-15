@@ -74,6 +74,7 @@ package mypackage;
 
 import oa.components.Recoders.BestRecorder;
 import oa.components.terminationcondition.MaxCallTerminationCondition;
+import oa.examples.continuousproblem.ContinuousUniformSearch;
 import sa.core.SimulatedAnnealing;
 import sa.components.basiccomponents.*;
 
@@ -87,7 +88,7 @@ public class MyDemo {
             new SimulatedAnnealing<>(
                 problem,
                 new SABasicInitializer(100),
-                new SABasicPerturbation(),
+                new ContinuousUniformSearch(),
                 new SABasicCoolingSchedule(0.99, 100),
                 new MaxCallTerminationCondition<double[]>(10000)
             );
@@ -123,7 +124,7 @@ SimulatedAnnealing<double[]> sa =
         new Random(42),  // 固定种子
         problem,
         new SABasicInitializer(100),
-        new SABasicPerturbation(),
+        new ContinuousUniformSearch(),
         new SABasicCoolingSchedule(0.99, 100),
         new MaxCallTerminationCondition<double[]>(10000)
     );

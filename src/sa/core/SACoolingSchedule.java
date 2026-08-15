@@ -50,7 +50,7 @@ public interface SACoolingSchedule<X, Prob extends Problem<X>> extends Component
      * 本方法每次迭代后调用一次，调用次数等于算法总迭代次数（非传统意义上的外循环）。
      * 传入的 {@link SAState} 封装了当前迭代的关键状态信息：
      * <ul>
-     *   <li>{@code state.getCurrentXIterator().next()} - 当前解（只读，不可原地修改）</li>
+     *   <li>{@code state.getCurrentXs()[0]} - 当前解（只读，不可原地修改）</li>
  *   <li>{@code state.getTemperature()} - 当前温度</li>
  *   <li>{@code state.getIsAccepted()} - 刚结束的本次迭代的接受结果，其值始终真实
  *       （包括首次调用时），实现可直接据此调整温度。</li>

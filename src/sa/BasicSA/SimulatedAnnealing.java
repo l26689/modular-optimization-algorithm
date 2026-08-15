@@ -222,13 +222,13 @@ public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem
      * 各组件（特别是扰动器和终止条件）需正确处理此初始状态。
      *
      * <h3>SAState 说明</h3>
-     * 算法通过 {@link SAState} 对象向组件传递状态信息，该对象封装了三个核心字段：
-     * <ul>
-     *   <li>{@code currentX} - 当前解</li>
-     *   <li>{@code temperature} - 当前系统温度</li>
-     *   <li>{@code isAccepted} - 上一轮迭代是否接受了新解</li>
-     * </ul>
-     * 组件应通过 {@code state.getCurrentXIterator().next()}、{@code state.getTemperature()}、{@code state.getIsAccepted()} 访问这些信息。
+ * 算法通过 {@link SAState} 对象向组件传递状态信息，该对象封装了三个核心字段：
+ * <ul>
+ *   <li>{@code currentXs} - 当前解数组（SA 中始终只包含一个元素）</li>
+ *   <li>{@code temperature} - 当前系统温度</li>
+ *   <li>{@code isAccepted} - 上一轮迭代是否接受了新解</li>
+ * </ul>
+ * 组件应通过 {@code state.getCurrentXs()[0]}、{@code state.getTemperature()}、{@code state.getIsAccepted()} 访问这些信息。
      *
      * <h3>线程安全</h3>
      * 本方法未做任何同步，默认在单线程下使用。如果在多线程环境中调用，

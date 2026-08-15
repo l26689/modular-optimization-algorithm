@@ -63,10 +63,10 @@ public interface SATerminationCondition<X, Prob extends Problem<X>>
      * 由主算法在每次迭代末尾调用一次。传入的 {@link SAState} 封装了当前迭代的
      * 关键状态信息：
      * <ul>
-     *   <li>{@code state.getCurrentXIterator().next()} - 当前解（只读，不可原地修改）</li>
-     *   <li>{@code state.getTemperature()} - 当前温度</li>
-     *   <li>{@code state.getIsAccepted()} - 刚结束的本次迭代的接受结果；
-     *       首次调用时为 {@code false}（冷启动），不应据此决定是否终止</li>
+     *   <li>{@code state.getCurrentXs()[0]} - 当前解（只读，不可原地修改）</li>
+ *   <li>{@code state.getTemperature()} - 当前温度</li>
+ *   <li>{@code state.getIsAccepted()} - 刚结束的本次迭代的接受结果；
+ *       首次调用时为 {@code false}（冷启动），不应据此决定是否终止</li>
      * </ul>
      *
      * @param state 当前迭代状态，包含当前解、温度和接受标志

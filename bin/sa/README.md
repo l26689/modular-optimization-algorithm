@@ -55,20 +55,19 @@ SimulatedAnnealing<X>
 
 ## 📦 SAState -- 迭代状态封装
 
-`SAState<X>` 是模拟退火算法在单次迭代中的状态快照。它继承自 `State<X>` 接口，该接口提供两种访问当前解的模式：
+`SAState<X>` 是模拟退火算法在单次迭代中的状态快照。它继承自 `State<X>` 接口，该接口通过数组模式统一访问当前解：
 
 | 模式 | 方法 | 说明 |
 |------|------|------|
-| **迭代器**（通用） | `getCurrentXIterator()` | 适用于所有解类型。常规用法：`while (it.hasNext()) { X x = it.next(); }` |
-| **数组**（高性能） | `getCurrentXs()` | 需先通过 `isArraySupported()` 校验；`SAState` **不支持此模式**（返回 `false`） |
+| **数组**（统一） | `getCurrentXs()` | 适用于所有解类型。SA 中数组始终只含一个元素，群体算法含多个。遍历：`for (X x : state.getCurrentXs())` |
 
-> **SA 专用简写**：由于 `SAState` 的迭代器始终只包含一个元素（当前解），且每次迭代创建新实例，SA 组件可直接 `getCurrentXIterator().next()` 获取当前解。但编写跨算法通用组件时，必须按迭代器标准方式 `while (it.hasNext())` 遍历。
+> **SA 专用简写**：由于 `SAState` 的数组始终只包含一个元素（当前解），SA 组件可直接 `getCurrentXs()[0]` 获取当前解。但编写跨算法通用组件时，必须使用 for-each 循环遍历，因为其他算法的数组可能包含多个元素。
 
 `SAState` 在基类之上额外封装了以下字段：
 
 | 字段 | 访问方法 | 说明 |
 |------|----------|------|
-| `currentX` | `state.getCurrentXIterator().next()` | 当前解（只读，不可原地修改） |
+| `currentX` | `state.getCurrentXs()[0]` | 当前解（只读，不可原地修改） |
 | `temperature` | `state.getTemperature()` | 当前系统温度 |
 | `isAccepted` | `state.getIsAccepted()` | 上一轮迭代是否接受了新解 |
 
@@ -163,7 +162,7 @@ public interface SAPerturbation<X, Prob extends Problem<X>> extends Component<X,
 
 **核心方法**：
 - `perturb(SAState<X> state)` -- 生成候选解
-  - `state.getCurrentXIterator().next()` -- 当前解（只读，不可原地修改）
+  - `state.getCurrentXs()[0]` -- 当前解（只读，不可原地修改）
   - `state.getTemperature()` -- 当前温度（可用于控制扰动幅度）
   - `state.getIsAccepted()` -- 上一轮接受结果（首次为 `false`，详见 [SAState](#sastate----迭代状态封装)）
 

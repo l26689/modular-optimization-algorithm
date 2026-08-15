@@ -2,6 +2,7 @@ package oa.examples.continuousproblem.rosenbrock;
 
 import oa.components.Recoders.*;
 import oa.components.terminationcondition.MaxCallTerminationCondition;
+import oa.examples.continuousproblem.ContinuousUniformSearch;
 import sa.BasicSA.SimulatedAnnealing;
 import sa.components.basiccomponents.*;
 
@@ -12,7 +13,7 @@ public class RosenbrockDemo {
         new <RosenbrockProblem>SimulatedAnnealing<double[]>(
             prob,
             new SABasicInitializer(100),
-            new SABasicPerturbation(),
+            new ContinuousUniformSearch(),
             new SABasicCoolingSchedule(0.99,100),
             new MaxCallTerminationCondition<double[]>(10000)
         );

@@ -5,10 +5,10 @@ import java.util.Random;
 import oa.api.optimizationalgorithm.OptimizationAlgorithm;
 import oa.api.problem.Problem;
 import oa.api.spi.Recorder;
+import oa.api.spi.SearchOperator;
 import oa.api.spi.TerminationCondition;
 import sa.core.SACoolingSchedule;
 import sa.core.SAInitializer;
-import sa.core.SAPerturbation;
 import sa.core.SAState;
 
 /**
@@ -73,7 +73,7 @@ import sa.core.SAState;
  */
 public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,SAState<X>> {
     private SAInitializer<X,? extends Problem<X>> initializer;//初始化器
-    private SAPerturbation<X,? extends Problem<X>> perturbation;//扰动器
+    private SearchOperator<X,? extends Problem<X>,? super SAState<X>> perturbation;//扰动器
     private SACoolingSchedule<X,? extends Problem<X>> coolingSchedule;//冷却器
     private TerminationCondition<X,? extends Problem<X>,? super SAState<X>> terminationCondition;//终止条件
     private Random random;//随机数生成器，由外部或内部创建，统一注入到所有组件，确保随机性可复现
@@ -108,7 +108,7 @@ public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem
     public <Prob extends Problem<X>>SimulatedAnnealing(
         Prob problem ,
         SAInitializer<X,? super Prob> initializer,
-        SAPerturbation<X,? super Prob> perturbation,
+        SearchOperator<X,? super Prob,? super SAState<X>> perturbation,
         SACoolingSchedule<X,? super Prob> coolingSchedule,
         TerminationCondition<X,? super Prob,? super SAState<X>> terminationCondition){
             this.problem = problem;
@@ -144,7 +144,7 @@ public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem
         Random random,
         Prob problem ,
         SAInitializer<X,? super Prob> initializer,
-        SAPerturbation<X,? super Prob> perturbation,
+        SearchOperator<X,? super Prob,? super SAState<X>> perturbation,
         SACoolingSchedule<X,? super Prob> coolingSchedule,
         TerminationCondition<X,? super Prob,? super SAState<X>> terminationCondition){
             this.problem = problem;
@@ -250,7 +250,7 @@ public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem
 
         while (!terminationCondition.check(state)) {
 
-            newX = perturbation.perturb(state);
+            newX = perturbation.search(state);
 
             isAccepted = random.nextDouble()<Math.exp(problem.compare(newX,currentX)/temperature);
             if(isAccepted){

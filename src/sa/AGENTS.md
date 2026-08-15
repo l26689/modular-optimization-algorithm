@@ -9,7 +9,7 @@ MSA 是一个**模块化优化算法框架**，将模拟退火拆解为四个可
 | 组件 | 职责 | 调用时机 | 继承关系 |
 |------|------|----------|----------|
 | `SAInitializer` | 生成初始解和初始温度 | 算法启动时 | `extends Initializer`（`oa.api.spi`） |
-| `SAPerturbation` | 从当前解生成候选解 | 每轮迭代 | `extends Component`（`oa.api.spi`） |
+| `SAPerturbation` | 从当前解生成候选解 | 每轮迭代 | `extends SearchOperator`（`oa.api.spi`） |
 | `SACoolingSchedule` | 降低温度 | 每轮迭代后 | `extends Component`（`oa.api.spi`） |
 | `SATerminationCondition` | 判断是否停止 | 每轮迭代后 | `extends TerminationCondition`（`oa.api.spi`） |
 
@@ -42,7 +42,7 @@ X initialX();
 double initialTemperature();
 
 // 扰动器
-X perturb(SAState<X> state);
+X search(SAState<X> state);              // 继承自 SearchOperator，生成候选解
 
 // 冷却策略
 double cool(SAState<X> state);
@@ -70,7 +70,7 @@ state.getIsAccepted()              // 上一轮是否接受新解（见下方冷
 > **⚠️ 重要**：`getCurrentXs()[0]` 直接索引是 SA 组件的特权。若编写同时支持 SA 和其他算法（如群体算法）的通用组件，必须使用 for-each 循环 `for (X x : state.getCurrentXs())` 遍历，因为其他算法的数组可能包含多个元素。
 
 **冷启动细节**：
-- `perturb()` 和 `check()` 的首次调用中，`isAccepted` 为 `false`（表示"尚无历史"）
+- `search()` 和 `check()` 的首次调用中，`isAccepted` 为 `false`（表示"尚无历史"）
 - `cool()` 的首次调用发生在第一轮迭代**之后**，此时 `isAccepted` 已是 Metropolis 准则的真实结果，**不是**默认 `false`
 
 ## 🔑 最少信息原则
@@ -120,7 +120,7 @@ public class GaussianPerturbation implements SAPerturbation<double[], Continuous
     }
 
     @Override
-    public double[] perturb(SAState<double[]> state) {
+    public double[] search(SAState<double[]> state) {
         double[] x = state.getCurrentXs()[0];
         double[] newX = problem.copyX(x);
         double temperature = state.getTemperature();
@@ -201,7 +201,7 @@ SimulatedAnnealing<double[]> sa =
 
 | 约束 | 说明 |
 |------|------|
-| 冷启动 | 详见上方 SAState 冷启动说明 |
+| 冷启动 | `search()` 和 `check()` 首次调用时 `isAccepted` 为 `false`，应视为冷启动信号；`cool()` 首次调用时 `isAccepted` 已是真实结果 |
 | 不可变性 | 不得原地修改 `state.getCurrentXs()[0]` 获取的解，必须返回新对象 |
 | 纯函数 | `compare()` 内部调用的评估逻辑必须是纯函数，相同输入 -> 相同输出。若实现了 `Evaluable`，`evaluate()` 也必须是纯函数且每次返回独立新对象 |
 | 随机数 | 使用注入的 `Random`，不得自行创建 |

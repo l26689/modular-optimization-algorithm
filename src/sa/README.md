@@ -33,17 +33,18 @@ SA 组件继承自 `oa.api.spi` 中的通用接口，形成两层继承体系：
 
 ```
                        oa.api.spi
-                  ┌────────┼────────┐
-           Component  Initializer  TerminationCondition
-               │          │              │
-           sa.core       │              │
-        ┌──────┼──────┐  │              │
-  SAPerturbation  SACoolingSchedule     │
-               SAInitializer    SATerminationCondition
+          ┌──────────────┼──────────────┐
+   Initializer  TerminationCondition  SearchOperator
+          │              │                  │
+       sa.core           │                  │
+          │              │        ┌─────────┘
+  SAInitializer    SATerminationCondition  SAPerturbation
+                                               │
+                                        SACoolingSchedule (extends Component)
 
 SimulatedAnnealing<X>
 |-- SAInitializer<X, Prob>              -> initialX() + initialTemperature()
-|-- SAPerturbation<X, Prob>             -> perturb(SAState)
+|-- SAPerturbation<X, Prob>             -> search(SAState)
 |-- SACoolingSchedule<X, Prob>          -> cool(SAState)
 +-- SATerminationCondition<X, Prob>     -> check(SAState)
 ```
@@ -72,7 +73,7 @@ SimulatedAnnealing<X>
 | `isAccepted` | `state.getIsAccepted()` | 上一轮迭代是否接受了新解 |
 
 **冷启动规定**：
-- `perturb()` 和 `check()` 的首次调用中，`getIsAccepted()` 为 `false`，表示"尚无历史"
+- `search()` 和 `check()` 的首次调用中，`getIsAccepted()` 为 `false`，表示"尚无历史"
 - `cool()` 的首次调用发生在第一轮迭代**之后**，此时 `getIsAccepted()` 已是 Metropolis 准则的**真实结果**，不是默认 `false`
 
 组件在接收到 `isAccepted = false` 时，应将其视为冷启动信号，采用默认保守策略。
@@ -85,7 +86,7 @@ src/sa/
 |   |-- SimulatedAnnealing         # 主循环控制器
 |   |-- SAState                    # SA 迭代状态封装
 |   |-- SAInitializer              # SA 初始化器接口（extends Initializer）
-|   |-- SAPerturbation             # SA 扰动器接口（extends Component）
+|   |-- SAPerturbation             # SA 扰动器接口（extends SearchOperator）
 |   |-- SACoolingSchedule          # SA 冷却策略接口（extends Component）
 |   +-- SATerminationCondition     # SA 终止条件接口（extends TerminationCondition）
 |-- components/
@@ -152,19 +153,23 @@ public interface SAInitializer<X, Prob extends Problem<X>> extends Initializer<X
 
 ### 2. SAPerturbation -- 扰动器
 
-定义如何从当前解生成邻域候选解。继承自 `oa.api.spi.Component<X, Prob, SAState<X>>`。
+定义如何从当前解生成邻域候选解。继承自 `oa.api.spi.SearchOperator<X, Prob, SAState<X>>`。
 
 ```java
-public interface SAPerturbation<X, Prob extends Problem<X>> extends Component<X, Prob, SAState<X>> {
-    X perturb(SAState<X> state);
+public interface SAPerturbation<X, Prob extends Problem<X>>
+        extends SearchOperator<X, Prob, SAState<X>> {
+    X search(SAState<X> state);
 }
 ```
 
 **核心方法**：
-- `perturb(SAState<X> state)` -- 生成候选解
+- `search(SAState<X> state)` -- 生成候选解
   - `state.getCurrentXs()[0]` -- 当前解（只读，不可原地修改）
   - `state.getTemperature()` -- 当前温度（可用于控制扰动幅度）
   - `state.getIsAccepted()` -- 上一轮接受结果（首次为 `false`，详见 [SAState](#sastate----迭代状态封装)）
+
+**SA 扰动特点**：SA 的扰动应是无倾向的随机扰动（unbiased），候选解在邻域中的分布应具有对称性，
+不偏向任何特定方向。避免使用梯度下降、动量等有向策略——这些属于爬山法或 PSO 的范畴。
 
 **要求**：必须返回全新对象，不得原地修改 `currentX`。
 

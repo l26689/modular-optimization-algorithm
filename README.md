@@ -41,6 +41,7 @@ MOA/
 │   └── oa.api.spi/                 # 组件服务接口（SPI）
 │       ├── Component               # 统一组件基接口（init）
 │       ├── Initializer             # 初始化器接口
+│       ├── SearchOperator          # 搜索算子接口
 │       ├── TerminationCondition    # 终止条件接口
 │       ├── Recorder                # 记录器接口
 │       └── Reusable                # 可复用契约
@@ -48,7 +49,7 @@ MOA/
 │   ├── SimulatedAnnealing     # 主循环控制器
 │   ├── SAState                # SA 迭代状态
 │   ├── SAInitializer          # SA 初始化器接口（extends Initializer）
-│   ├── SAPerturbation         # SA 扰动器接口（extends Component）
+│   ├── SAPerturbation         # SA 扰动器接口（extends SearchOperator）
 │   ├── SACoolingSchedule      # SA 冷却策略接口（extends Component）
 │   └── SATerminationCondition # SA 终止条件接口（extends TerminationCondition）
 ├── sa.components/             # SA 内置实现

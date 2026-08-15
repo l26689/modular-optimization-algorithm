@@ -35,7 +35,7 @@ import java.util.Random;
  *
  * <h3>功能方法的参数约定</h3>
  * 本接口仅定义了统一的初始化方法 {@link #init(Problem, Random)}，组件特有的
- * 功能方法（如终止条件的 {@code check}、扰动器的 {@code perturb}、冷却策略的
+ * 功能方法（如终止条件的 {@code check}、搜索算子的 {@code search}、冷却策略的
  * {@code cool}、接受准则的 {@code accept} 等）由各子接口或抽象类自行声明。
  * 这些功能方法应遵循以下约定：
  * <ul>

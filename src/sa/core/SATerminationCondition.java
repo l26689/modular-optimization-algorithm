@@ -1,7 +1,5 @@
 package sa.core;
 
-import java.util.Random;
-
 import oa.api.problem.Problem;
 import oa.api.spi.TerminationCondition;
 import sa.BasicSA.SimulatedAnnealing;
@@ -42,20 +40,6 @@ import sa.BasicSA.SimulatedAnnealing;
  */
 public interface SATerminationCondition<X, Prob extends Problem<X>>
         extends TerminationCondition<X, Prob, SAState<X>> {
-
-    /**
-     * 绑定问题实例，使终止条件可获取问题的维度等元数据（多数终止条件无需此信息，
-     * 但作为组件统一契约保留）。
-     * <p>
-     * 此方法由框架在构造阶段自动调用，使用者无需手动处理。
-     *
-     * @param problem 待求解问题
-     * @param random 随机数生成器，由主算法统一创建并注入，组件应使用此实例进行所有随机操作
-     *               （如随机终止策略），以保证结果可复现；不应自行创建新的 {@link Random} 实例
-     * @throws NullPointerException 如果 problem 为 null
-     */
-    @Override
-    void init(Prob problem, Random random);
 
     /**
      * 检查当前是否满足终止条件。

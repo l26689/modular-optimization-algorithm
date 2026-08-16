@@ -3,5 +3,7 @@
     "java.project.outputPath": "bin",
     "java.project.referencedLibraries": [
         "lib/**/*.jar"
-    ]
+    ],
+    "trae.tab.enableRename": false,
+    "trae.tab.enableAutoImport": false
 }

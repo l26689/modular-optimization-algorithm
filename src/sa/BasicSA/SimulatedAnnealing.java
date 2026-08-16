@@ -71,7 +71,7 @@ import sa.core.SAState;
  *
  * @param <X> 解的表示类型（例如 {@code double[]}、{@code int[]}）
  */
-public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,SAState<X>> {
+public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,BasicSAState<X>> {
     private SAInitializer<X,? extends Problem<X>> initializer;//初始化器
     private SearchOperator<X,? extends Problem<X>,? super SAState<X>> perturbation;//扰动器
     private SACoolingSchedule<X,? extends Problem<X>> coolingSchedule;//冷却器
@@ -238,13 +238,13 @@ public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem
      *                 优化结果通过 {@code recorder} 对外提供（如 {@code getBestX()}、{@code getHistory()} 等）
      */
     @Override
-    public final void  solve(Recorder<X,? extends Problem<X>,? super SAState<X>> recorder){
+    public final void  solve(Recorder<X,? extends Problem<X>,? super BasicSAState<X>> recorder){
         double temperature= initializer.initialTemperature();
         X currentX = initializer.initialX();
         X newX = problem.copyX(currentX);
 
         boolean isAccepted = false;
-        SAState<X> state = new SAState<X>(currentX,temperature,isAccepted);
+        BasicSAState<X> state = new BasicSAState<X>(currentX,temperature,isAccepted);
 
         recorder.record(state);
 

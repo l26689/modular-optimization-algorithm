@@ -1,4 +1,4 @@
-package sa.components.basiccomponents;
+package sa.components.continuousproblem;
 
 import oa.examples.continuousproblem.ContinuousProblem;
 import oa.examples.continuousproblem.RandomInitializer;

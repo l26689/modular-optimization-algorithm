@@ -4,7 +4,7 @@ import oa.components.Recoders.*;
 import oa.components.terminationcondition.MaxCallTerminationCondition;
 import oa.examples.continuousproblem.ContinuousUniformSearch;
 import sa.BasicSA.SimulatedAnnealing;
-import sa.components.basiccomponents.*;
+import sa.components.continuousproblem.*;
 
 public class RosenbrockDemo {
     void main() {

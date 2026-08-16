@@ -1,4 +1,7 @@
-package oa.api;
+package oa.api.spi;
+
+import oa.api.optimizationalgorithm.State;
+import oa.api.problem.Problem;
 
 /**
  * 算法记录员，负责记录优化过程中算法的状态信息,也可以作为算法性能评估的工具。
@@ -41,7 +44,7 @@ package oa.api;
  * @param <X> 解的表示类型
  * @param <Prob> 优化问题的类型，必须是 {@link Problem<X>} 类的子类
  */
-abstract public interface Recorder<X,Prob extends Problem<X>,S extends State<X>> {
+abstract public interface Recorder<X,Prob extends Problem<X>,S extends State<X>>{
     /**
      * 记录一个解及其对应的目标值。
      * <p>

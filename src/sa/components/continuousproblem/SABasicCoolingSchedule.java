@@ -1,4 +1,4 @@
-package sa.components.basiccomponents;
+package sa.components.continuousproblem;
 
 import sa.core.SACoolingSchedule;
 import sa.core.SAState;
@@ -6,7 +6,7 @@ import java.util.Random;
 
 import oa.examples.continuousproblem.ContinuousProblem;
 
-public class SABasicCoolingSchedule extends SACoolingSchedule<double[],ContinuousProblem> {
+public final class SABasicCoolingSchedule implements SACoolingSchedule<double[],ContinuousProblem> {
     private double coolingRate;
     private int currentIteration;
     private int maxIterations;
@@ -24,7 +24,7 @@ public class SABasicCoolingSchedule extends SACoolingSchedule<double[],Continuou
     
     @Override
     public double cool(SAState<double[]> state) {
-        double temperature = state.temperature();
+        double temperature = state.getTemperature();
         currentIteration++;
         if(currentIteration > maxIterations) {
             currentIteration = 0;

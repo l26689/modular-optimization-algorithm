@@ -1,10 +1,15 @@
-package sa.core;
+package sa.BasicSA;
 
 import java.util.Random;
 
-import oa.api.OptimizationAlgorithm;
-import oa.api.Problem;
-import oa.api.Recorder;
+import oa.api.optimizationalgorithm.OptimizationAlgorithm;
+import oa.api.problem.Problem;
+import oa.api.spi.Recorder;
+import oa.api.spi.SearchOperator;
+import oa.api.spi.TerminationCondition;
+import sa.core.SACoolingSchedule;
+import sa.core.SAInitializer;
+import sa.core.SAState;
 
 /**
  * 模块化模拟退火算法的主协调器。
@@ -14,11 +19,11 @@ import oa.api.Recorder;
  * <ol>
  *   <li>获取初始解与初始温度</li>
  *   <li>迭代：扰动 → 评估 → Metropolis 接受准则 → 冷却 → 检查终止</li>
- *   <li>通过 {@link oa.api.Recorder} 输出优化结果</li>
+ *   <li>通过 {@link oa.api.spi.Recorder} 输出优化结果</li>
  * </ol>
  *
  * <h3>问题类型绑定</h3>
- * 与基类 {@link oa.api.OptimizationAlgorithm} 不同，本类在<b>类级别</b>仅声明
+ * 与基类 {@link oa.api.optimizationalgorithm.OptimizationAlgorithm} 不同，本类在<b>类级别</b>仅声明
  * {@code <X>}，具体的 {@code Prob} 类型参数被推迟到<b>构造函数级别</b>声明。
  * 这样设计的好处是：同一个 {@code SimulatedAnnealing<X>} 实例在理论上可以
  * 被不同类型的问题复用（配合 {@link oa.api.Reusable} 接口），
@@ -66,11 +71,11 @@ import oa.api.Recorder;
  *
  * @param <X> 解的表示类型（例如 {@code double[]}、{@code int[]}）
  */
-public class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,SAState<X>> {
+public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,BasicSAState<X>> {
     private SAInitializer<X,? extends Problem<X>> initializer;//初始化器
-    private SAPerturbation<X,? extends Problem<X>> perturbation;//扰动器
+    private SearchOperator<X,? extends Problem<X>,? super SAState<X>> perturbation;//扰动器
     private SACoolingSchedule<X,? extends Problem<X>> coolingSchedule;//冷却器
-    private SATerminationCondition<X,? extends Problem<X>> terminationCondition;//终止条件
+    private TerminationCondition<X,? extends Problem<X>,? super SAState<X>> terminationCondition;//终止条件
     private Random random;//随机数生成器，由外部或内部创建，统一注入到所有组件，确保随机性可复现
 
     /**
@@ -103,9 +108,9 @@ public class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,SA
     public <Prob extends Problem<X>>SimulatedAnnealing(
         Prob problem ,
         SAInitializer<X,? super Prob> initializer,
-        SAPerturbation<X,? super Prob> perturbation,
+        SearchOperator<X,? super Prob,? super SAState<X>> perturbation,
         SACoolingSchedule<X,? super Prob> coolingSchedule,
-        SATerminationCondition<X,? super Prob> terminationCondition){
+        TerminationCondition<X,? super Prob,? super SAState<X>> terminationCondition){
             this.problem = problem;
             this.initializer = initializer;
             this.perturbation = perturbation;
@@ -139,9 +144,9 @@ public class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,SA
         Random random,
         Prob problem ,
         SAInitializer<X,? super Prob> initializer,
-        SAPerturbation<X,? super Prob> perturbation,
+        SearchOperator<X,? super Prob,? super SAState<X>> perturbation,
         SACoolingSchedule<X,? super Prob> coolingSchedule,
-        SATerminationCondition<X,? super Prob> terminationCondition){
+        TerminationCondition<X,? super Prob,? super SAState<X>> terminationCondition){
             this.problem = problem;
             this.initializer = initializer;
             this.perturbation = perturbation;
@@ -206,7 +211,7 @@ public class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,SA
      * 而非零，使接受概率略低于 1。这与当前框架的偏序设计完全兼容。
      *
      * <h3>Recorder 记录策略</h3>
-     * 模拟退火的 {@link oa.api.Recorder} 遵循<b>仅记录被接受解</b>的策略：
+     * 模拟退火的 {@link oa.api.spi.Recorder} 遵循<b>仅记录被接受解</b>的策略：
      * 每轮迭代中，只有当候选解被接受（无论是因更优而确定性接受，还是因 Metropolis
      * 准则而概率性接受）时，才会调用 {@code recorder.record(newX, newValue)}。
      * 被拒绝的候选解不会触发记录。这一策略确保记录的历史序列完整反映了
@@ -217,13 +222,13 @@ public class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,SA
      * 各组件（特别是扰动器和终止条件）需正确处理此初始状态。
      *
      * <h3>SAState 说明</h3>
-     * 算法通过 {@link SAState} 对象向组件传递状态信息，该对象封装了三个核心字段：
-     * <ul>
-     *   <li>{@code currentX} - 当前解</li>
-     *   <li>{@code temperature} - 当前系统温度</li>
-     *   <li>{@code isAccepted} - 上一轮迭代是否接受了新解</li>
-     * </ul>
-     * 组件应通过 {@code state.currentX()}、{@code state.temperature()}、{@code state.isAccepted()} 访问这些信息。
+ * 算法通过 {@link SAState} 对象向组件传递状态信息，该对象封装了三个核心字段：
+ * <ul>
+ *   <li>{@code currentXs} - 当前解数组（SA 中始终只包含一个元素）</li>
+ *   <li>{@code temperature} - 当前系统温度</li>
+ *   <li>{@code isAccepted} - 上一轮迭代是否接受了新解</li>
+ * </ul>
+ * 组件应通过 {@code state.getCurrentXs()[0]}、{@code state.getTemperature()}、{@code state.getIsAccepted()} 访问这些信息。
      *
      * <h3>线程安全</h3>
      * 本方法未做任何同步，默认在单线程下使用。如果在多线程环境中调用，
@@ -233,23 +238,33 @@ public class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,SA
      *                 优化结果通过 {@code recorder} 对外提供（如 {@code getBestX()}、{@code getHistory()} 等）
      */
     @Override
-    public void solve(Recorder<X,? extends Problem<X>,? super SAState<X>> recorder){
+    public final void  solve(Recorder<X,? extends Problem<X>,? super BasicSAState<X>> recorder){
         double temperature= initializer.initialTemperature();
         X currentX = initializer.initialX();
         X newX = problem.copyX(currentX);
 
         boolean isAccepted = false;
+        BasicSAState<X> state = new BasicSAState<X>(currentX,temperature,isAccepted);
 
-        while (!terminationCondition.check(new SAState<X>(currentX,temperature,isAccepted))) {
+        recorder.record(state);
 
-            newX = perturbation.perturb(new SAState<X>(currentX,temperature,isAccepted));
+        while (!terminationCondition.check(state)) {
+
+            newX = perturbation.search(state);
 
             isAccepted = random.nextDouble()<Math.exp(problem.compare(newX,currentX)/temperature);
             if(isAccepted){
                 currentX = newX;
             }
-            recorder.record(new SAState<X>(currentX,temperature,isAccepted));
-            temperature = coolingSchedule.cool(new SAState<X>(currentX,temperature,isAccepted));
+
+            state.set(currentX,temperature,isAccepted);
+
+            
+            temperature = coolingSchedule.cool(state);
+
+            state.set(currentX,temperature,isAccepted);
+            
+            recorder.record(state);
         }
     }
 }

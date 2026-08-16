@@ -1,4 +1,7 @@
-package oa.api;
+package oa.api.optimizationalgorithm;
+
+import oa.api.problem.Problem;
+import oa.api.spi.Recorder;
 
 /**
  * 优化算法的抽象基类。

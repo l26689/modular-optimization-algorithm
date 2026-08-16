@@ -29,12 +29,24 @@
 
 ### 架构概览
 
+SA 组件继承自 `oa.api.spi` 中的通用接口，形成两层继承体系：
+
 ```
+                       oa.api.spi
+          ┌──────────────┼──────────────┐
+   Initializer  TerminationCondition  SearchOperator
+          │              │                  │
+       sa.core           │                  │
+          │              │        ┌─────────┘
+  SAInitializer    SATerminationCondition  SAPerturbation
+                                               │
+                                        SACoolingSchedule (extends Component)
+
 SimulatedAnnealing<X>
-|-- SAInitializer<X, Prob>     -> initialX() + initialTemperature()
-|-- SAPerturbation<X, Prob>    -> perturb(SAState)
-|-- SACoolingSchedule<X, Prob> -> cool(SAState)
-+-- SATerminationCondition<X, Prob> -> check(SAState)
+|-- SAInitializer<X, Prob>              -> initialX() + initialTemperature()
+|-- SAPerturbation<X, Prob>             -> search(SAState)
+|-- SACoolingSchedule<X, Prob>          -> cool(SAState)
++-- SATerminationCondition<X, Prob>     -> check(SAState)
 ```
 
 主循环流程：
@@ -44,17 +56,25 @@ SimulatedAnnealing<X>
 
 ## 📦 SAState -- 迭代状态封装
 
-`SAState<X>` 是模拟退火算法在单次迭代中的状态快照，封装了三个核心字段：
+`SAState<X>` 是模拟退火算法在单次迭代中的状态快照。它继承自 `State<X>` 接口，该接口通过数组模式统一访问当前解：
+
+| 模式 | 方法 | 说明 |
+|------|------|------|
+| **数组**（统一） | `getCurrentXs()` | 适用于所有解类型。SA 中数组始终只含一个元素，群体算法含多个。遍历：`for (X x : state.getCurrentXs())` |
+
+> **SA 专用简写**：由于 `SAState` 的数组始终只包含一个元素（当前解），SA 组件可直接 `getCurrentXs()[0]` 获取当前解。但编写跨算法通用组件时，必须使用 for-each 循环遍历，因为其他算法的数组可能包含多个元素。
+
+`SAState` 在基类之上额外封装了以下字段：
 
 | 字段 | 访问方法 | 说明 |
 |------|----------|------|
-| `currentX` | `state.currentX()` | 当前解（只读，不可原地修改） |
-| `temperature` | `state.temperature()` | 当前系统温度 |
-| `isAccepted` | `state.isAccepted()` | 上一轮迭代是否接受了新解 |
+| `currentX` | `state.getCurrentXs()[0]` | 当前解（只读，不可原地修改） |
+| `temperature` | `state.getTemperature()` | 当前系统温度 |
+| `isAccepted` | `state.getIsAccepted()` | 上一轮迭代是否接受了新解 |
 
 **冷启动规定**：
-- `perturb()` 和 `check()` 的首次调用中，`isAccepted` 为 `false`，表示"尚无历史"
-- `cool()` 的首次调用发生在第一轮迭代**之后**，此时 `isAccepted` 已是 Metropolis 准则的**真实结果**，不是默认 `false`
+- `search()` 和 `check()` 的首次调用中，`getIsAccepted()` 为 `false`，表示"尚无历史"
+- `cool()` 的首次调用发生在第一轮迭代**之后**，此时 `getIsAccepted()` 已是 Metropolis 准则的**真实结果**，不是默认 `false`
 
 组件在接收到 `isAccepted = false` 时，应将其视为冷启动信号，采用默认保守策略。
 
@@ -65,16 +85,14 @@ src/sa/
 |-- core/                          # 核心框架
 |   |-- SimulatedAnnealing         # 主循环控制器
 |   |-- SAState                    # SA 迭代状态封装
-|   |-- SAInitializer              # 初始化器抽象类
-|   |-- SAPerturbation             # 扰动器抽象类
-|   |-- SACoolingSchedule          # 冷却策略抽象类
-|   +-- SATerminationCondition     # 终止条件抽象类
+|   |-- SAInitializer              # SA 初始化器接口（extends Initializer）
+|   |-- SAPerturbation             # SA 扰动器接口（extends SearchOperator）
+|   |-- SACoolingSchedule          # SA 冷却策略接口（extends Component）
+|   +-- SATerminationCondition     # SA 终止条件接口（extends TerminationCondition）
 |-- components/
 |   +-- basiccomponents/           # 内置基础实现
-|       |-- SABasicInitializer
-|       |-- SABasicPerturbation
-|       |-- SABasicCoolingSchedule
-|       +-- SABasicTerminationCondition
+|       |-- SABasicInitializer     # 实现 SAInitializer
+|       +-- SABasicCoolingSchedule # 实现 SACoolingSchedule
 |-- AGENTS.md                      # AI Agent 使用指南
 +-- README.md                      # 本文档
 ```
@@ -89,6 +107,8 @@ src/sa/
 ```java
 import oa.examples.continuousproblem.myproblem.MyProblem;
 import oa.components.Recoders.BestRecorder;
+import oa.components.terminationcondition.MaxCallTerminationCondition;
+import oa.examples.continuousproblem.ContinuousUniformSearch;
 import sa.core.SimulatedAnnealing;
 import sa.components.basiccomponents.*;
 
@@ -100,9 +120,9 @@ SimulatedAnnealing<double[]> sa =
     new SimulatedAnnealing<>(
         problem,
         new SABasicInitializer(100),
-        new SABasicPerturbation(),
+        new ContinuousUniformSearch(),
         new SABasicCoolingSchedule(0.99, 100),
-        new SABasicTerminationCondition(10000)
+        new MaxCallTerminationCondition<double[]>(10000)
     );
 
 // 3. 创建记录器并启动算法
@@ -117,48 +137,49 @@ System.out.println(problem.evaluate(recorder.getBestX()));
 
 ### 1. SAInitializer -- 初始化器
 
-负责生成搜索的起始解和初始温度。
+负责生成搜索的起始解和初始温度。继承自 `oa.api.spi.Initializer<X, Prob, SAState<X>>`。
 
 ```java
-public abstract class SAInitializer<X, Prob extends Problem<X>> {
-    protected abstract void init(Prob problem, Random random);
-    protected abstract X initialX();
-    protected abstract double initialTemperature();
+public interface SAInitializer<X, Prob extends Problem<X>> extends Initializer<X, Prob, SAState<X>> {
+    X initialX();
+    double initialTemperature();
 }
 ```
 
 **核心方法**：
-- `init(problem, random)` -- 绑定问题实例，获取维度、边界等元数据
+- `init(problem, random)` -- 绑定问题实例（继承自 `Component`），获取维度、边界等元数据
 - `initialX()` -- 生成起始解（必须是独立新对象）
 - `initialTemperature()` -- 计算起始温度（应足够高以保证早期探索能力）
 
 ### 2. SAPerturbation -- 扰动器
 
-定义如何从当前解生成邻域候选解。
+定义如何从当前解生成邻域候选解。继承自 `oa.api.spi.SearchOperator<X, Prob, SAState<X>>`。
 
 ```java
-public abstract class SAPerturbation<X, Prob extends Problem<X>> {
-    protected abstract void init(Prob problem, Random random);
-    protected abstract X perturb(SAState<X> state);
+public interface SAPerturbation<X, Prob extends Problem<X>>
+        extends SearchOperator<X, Prob, SAState<X>> {
+    X search(SAState<X> state);
 }
 ```
 
 **核心方法**：
-- `perturb(SAState<X> state)` -- 生成候选解
-  - `state.currentX()` -- 当前解（只读，不可原地修改）
-  - `state.temperature()` -- 当前温度（可用于控制扰动幅度）
-  - `state.isAccepted()` -- 上一轮接受结果（首次为 `false`，详见 [SAState](#sastate----迭代状态封装)）
+- `search(SAState<X> state)` -- 生成候选解
+  - `state.getCurrentXs()[0]` -- 当前解（只读，不可原地修改）
+  - `state.getTemperature()` -- 当前温度（可用于控制扰动幅度）
+  - `state.getIsAccepted()` -- 上一轮接受结果（首次为 `false`，详见 [SAState](#sastate----迭代状态封装)）
+
+**SA 扰动特点**：SA 的扰动应是无倾向的随机扰动（unbiased），候选解在邻域中的分布应具有对称性，
+不偏向任何特定方向。避免使用梯度下降、动量等有向策略——这些属于爬山法或 PSO 的范畴。
 
 **要求**：必须返回全新对象，不得原地修改 `currentX`。
 
 ### 3. SACoolingSchedule -- 冷却策略
 
-定义温度如何随迭代逐步降低。
+定义温度如何随迭代逐步降低。继承自 `oa.api.spi.Component<X, Prob, SAState<X>>`。
 
 ```java
-public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
-    protected abstract void init(Prob problem, Random random);
-    protected abstract double cool(SAState<X> state);
+public interface SACoolingSchedule<X, Prob extends Problem<X>> extends Component<X, Prob, SAState<X>> {
+    double cool(SAState<X> state);
 }
 ```
 
@@ -166,31 +187,33 @@ public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
 - `cool(SAState<X> state)` -- 计算下一轮温度
   - 每次迭代调用一次，调用次数等于算法总迭代次数
   - 经典几何冷却：`temperature *= coolingRate`（`coolingRate` 略小于 1）
-  - 注意：`cool()` 的首次调用发生在第一轮迭代**之后**，此时 `isAccepted` 已是真实结果（详见 [SAState](#sastate----迭代状态封装)）
+  - 注意：`cool()` 的首次调用发生在第一轮迭代**之后**，此时 `state.getIsAccepted()` 已是真实结果（详见 [SAState](#sastate----迭代状态封装)）
 
 ### 4. SATerminationCondition -- 终止条件
 
-决定算法何时停止迭代。
+决定算法何时停止迭代。继承自 `oa.api.spi.TerminationCondition<X, Prob, SAState<X>>`。
 
 ```java
-public abstract class SATerminationCondition<X, Prob extends Problem<X>> {
-    protected abstract void init(Prob problem, Random random);
-    protected abstract boolean check(SAState<X> state);
+public interface SATerminationCondition<X, Prob extends Problem<X>>
+        extends TerminationCondition<X, Prob, SAState<X>> {
+    boolean check(SAState<X> state);
 }
 ```
 
 **核心方法**：
 - `check(SAState<X> state)` -- 判断是否终止
   - 返回 `true` 表示满足终止条件，算法停止
-  - 常见实现：最大迭代次数、温度低于阈值、连续未接受等
-  - 首次调用时 `isAccepted` 为 `false`（详见 [SAState](#sastate----迭代状态封装)）
+  - 常见实现：最大调用次数、温度低于阈值、连续未接受等
+  - 首次调用时 `state.getIsAccepted()` 为 `false`（详见 [SAState](#sastate----迭代状态封装)）
+
+内置实现：`oa.components.terminationcondition.MaxCallTerminationCondition` — 实现了 `SATerminationCondition`，基于调用次数上限终止。
 
 ## 🧩 自定义组件
 
-所有组件只需继承对应的抽象类并实现核心方法。以下是一个线性冷却策略示例：
+所有组件只需实现对应的接口并实现核心方法。以下是一个线性冷却策略示例：
 
 ```java
-public class LinearCoolingSchedule extends SACoolingSchedule<double[], ContinuousProblem> {
+public class LinearCoolingSchedule implements SACoolingSchedule<double[], ContinuousProblem> {
     private double coolingRate;
     private int currentIteration;
     private int maxIterations;
@@ -202,13 +225,13 @@ public class LinearCoolingSchedule extends SACoolingSchedule<double[], Continuou
     }
 
     @Override
-    protected void init(ContinuousProblem problem, Random random) {
+    public void init(ContinuousProblem problem, Random random) {
         // 此实现无需额外操作
     }
 
     @Override
-    protected double cool(SAState<double[]> state) {
-        double temperature = state.temperature();
+    public double cool(SAState<double[]> state) {
+        double temperature = state.getTemperature();
         currentIteration++;
         if (currentIteration > maxIterations) {
             currentIteration = 0;
@@ -291,7 +314,7 @@ public class MyProblem extends ContinuousProblem {
 | `true` | 满足终止条件，算法将停止迭代 |
 | `false` | 继续迭代 |
 
-- 首次调用时 `state.isAccepted()` 为 `false`（冷启动），不应据此决定是否终止
+- 首次调用时 `state.getIsAccepted()` 为 `false`（冷启动），不应据此决定是否终止
 - 实现可通过内部计数器统计调用次数来推导迭代次数
 
 ## 🔮 未来演进

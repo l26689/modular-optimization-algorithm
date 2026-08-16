@@ -6,12 +6,12 @@
 
 MSA 是一个**模块化优化算法框架**，将模拟退火拆解为四个可替换组件：
 
-| 组件 | 职责 | 调用时机 |
-|------|------|----------|
-| `SAInitializer` | 生成初始解和初始温度 | 算法启动时 |
-| `SAPerturbation` | 从当前解生成候选解 | 每轮迭代 |
-| `SACoolingSchedule` | 降低温度 | 每轮迭代后 |
-| `SATerminationCondition` | 判断是否停止 | 每轮迭代后 |
+| 组件 | 职责 | 调用时机 | 继承关系 |
+|------|------|----------|----------|
+| `SAInitializer` | 生成初始解和初始温度 | 算法启动时 | `extends Initializer`（`oa.api.spi`） |
+| `SAPerturbation` | 从当前解生成候选解 | 每轮迭代 | `extends SearchOperator`（`oa.api.spi`） |
+| `SACoolingSchedule` | 降低温度 | 每轮迭代后 | `extends Component`（`oa.api.spi`） |
+| `SATerminationCondition` | 判断是否停止 | 每轮迭代后 | `extends TerminationCondition`（`oa.api.spi`） |
 
 ## 📐 接口契约速查
 
@@ -22,7 +22,6 @@ MSA 是一个**模块化优化算法框架**，将模拟退火拆解为四个可
 | 参数 | 含义 | 典型值 |
 |------|------|--------|
 | `X` | 解的表示类型 | `double[]`、`int[]`、自定义数据结构 |
-| `Y` | 目标函数返回值类型（用于 `Evaluable<X, Y>`） | `Double`（单目标）、`double[]`（多目标） |
 | `Prob` | 问题类型，必须实现 `Problem<X>` | `ContinuousProblem`、自定义问题类 |
 
 示例：`SAPerturbation<double[], ContinuousProblem>` 表示一个处理连续空间扰动器。
@@ -43,7 +42,7 @@ X initialX();
 double initialTemperature();
 
 // 扰动器
-X perturb(SAState<X> state);
+X search(SAState<X> state);              // 继承自 SearchOperator，生成候选解
 
 // 冷却策略
 double cool(SAState<X> state);
@@ -52,16 +51,26 @@ double cool(SAState<X> state);
 boolean check(SAState<X> state);
 ```
 
-### SAState 提供的信息
+`State<X>` 接口通过数组模式统一提供当前解的访问：
+
+| 模式 | 方法 | 适用场景 |
+|------|------|----------|
+| **数组**（统一） | `getCurrentXs()` | 所有解类型，遍历：`for (X x : state.getCurrentXs())`；SA 中数组只含一个元素，群体算法含多个 |
+
+`SAState` 在基类之上额外封装了 SA 特有的字段：
 
 ```java
-state.currentX()      // 当前解（只读）
-state.temperature()   // 当前温度
-state.isAccepted()    // 上一轮是否接受新解（见下方冷启动说明）
+// SA 专用简写：SAState 的数组始终只包含一个元素（当前解），
+// 因此 SA 组件可直接通过索引 [0] 获取当前解
+state.getCurrentXs()[0]            // 当前解（只读）
+state.getTemperature()             // 当前温度
+state.getIsAccepted()              // 上一轮是否接受新解（见下方冷启动说明）
 ```
 
+> **⚠️ 重要**：`getCurrentXs()[0]` 直接索引是 SA 组件的特权。若编写同时支持 SA 和其他算法（如群体算法）的通用组件，必须使用 for-each 循环 `for (X x : state.getCurrentXs())` 遍历，因为其他算法的数组可能包含多个元素。
+
 **冷启动细节**：
-- `perturb()` 和 `check()` 的首次调用中，`isAccepted` 为 `false`（表示"尚无历史"）
+- `search()` 和 `check()` 的首次调用中，`isAccepted` 为 `false`（表示"尚无历史"）
 - `cool()` 的首次调用发生在第一轮迭代**之后**，此时 `isAccepted` 已是 Metropolis 准则的真实结果，**不是**默认 `false`
 
 ## 🔑 最少信息原则
@@ -100,21 +109,21 @@ public class MyProblem extends ContinuousProblem {
 ### 任务二：自定义扰动器
 
 ```java
-public class GaussianPerturbation extends SAPerturbation<double[], ContinuousProblem> {
+public class GaussianPerturbation implements SAPerturbation<double[], ContinuousProblem> {
     private ContinuousProblem problem;
     private Random random;
 
     @Override
-    protected void init(ContinuousProblem problem, Random random) {
+    public void init(ContinuousProblem problem, Random random) {
         this.problem = problem;
         this.random = random;
     }
 
     @Override
-    protected double[] perturb(SAState<double[]> state) {
-        double[] x = state.currentX();
+    public double[] search(SAState<double[]> state) {
+        double[] x = state.getCurrentXs()[0];
         double[] newX = problem.copyX(x);
-        double temperature = state.temperature();
+        double temperature = state.getTemperature();
 
         for (int i = 0; i < newX.length; i++) {
             newX[i] += random.nextGaussian() * temperature * 0.1;
@@ -127,7 +136,7 @@ public class GaussianPerturbation extends SAPerturbation<double[], ContinuousPro
 ### 任务三：自适应冷却策略
 
 ```java
-public class AdaptiveCooling extends SACoolingSchedule<double[], ContinuousProblem> {
+public class AdaptiveCooling implements SACoolingSchedule<double[], ContinuousProblem> {
     private double baseRate;
     private int acceptedCount;
     private int totalCalls;
@@ -139,19 +148,19 @@ public class AdaptiveCooling extends SACoolingSchedule<double[], ContinuousProbl
     }
 
     @Override
-    protected void init(ContinuousProblem problem, Random random) {}
+    public void init(ContinuousProblem problem, Random random) {}
 
     @Override
-    protected double cool(SAState<double[]> state) {
+    public double cool(SAState<double[]> state) {
         totalCalls++;
-        if (state.isAccepted()) acceptedCount++;
+        if (state.getIsAccepted()) acceptedCount++;
 
         double rate = baseRate;
         if (totalCalls > 100) {
             double acceptRate = (double) acceptedCount / totalCalls;
             rate = acceptRate > 0.5 ? 0.95 : 0.99;
         }
-        return state.temperature() * rate;
+        return state.getTemperature() * rate;
     }
 }
 ```
@@ -164,9 +173,9 @@ SimulatedAnnealing<double[]> sa =
     new SimulatedAnnealing<>(
         problem,
         new SABasicInitializer(100),
-        new SABasicPerturbation(),
+        new ContinuousUniformSearch(),
         new SABasicCoolingSchedule(0.99, 100),
-        new SABasicTerminationCondition(10000)
+        new MaxCallTerminationCondition<double[]>(10000)
     );
 
 BestRecorder<double[]> recorder = new BestRecorder<>(problem);
@@ -182,9 +191,9 @@ SimulatedAnnealing<double[]> sa =
         new Random(42),  // 固定种子
         problem,
         new SABasicInitializer(100),
-        new SABasicPerturbation(),
+        new ContinuousUniformSearch(),
         new SABasicCoolingSchedule(0.99, 100),
-        new SABasicTerminationCondition(10000)
+        new MaxCallTerminationCondition<double[]>(10000)
     );
 ```
 
@@ -192,8 +201,8 @@ SimulatedAnnealing<double[]> sa =
 
 | 约束 | 说明 |
 |------|------|
-| 冷启动 | 详见上方 SAState 冷启动说明 |
-| 不可变性 | 不得原地修改 `state.currentX()`，必须返回新对象 |
+| 冷启动 | `search()` 和 `check()` 首次调用时 `isAccepted` 为 `false`，应视为冷启动信号；`cool()` 首次调用时 `isAccepted` 已是真实结果 |
+| 不可变性 | 不得原地修改 `state.getCurrentXs()[0]` 获取的解，必须返回新对象 |
 | 纯函数 | `compare()` 内部调用的评估逻辑必须是纯函数，相同输入 -> 相同输出。若实现了 `Evaluable`，`evaluate()` 也必须是纯函数且每次返回独立新对象 |
 | 随机数 | 使用注入的 `Random`，不得自行创建 |
 | 线程安全 | 框架单线程运行，组件内部状态需自行同步 |
@@ -223,7 +232,7 @@ SimulatedAnnealing<double[]> sa =
 | `true` | 满足终止条件，算法将停止迭代 |
 | `false` | 继续迭代 |
 
-- 首次调用时 `state.isAccepted()` 为 `false`（冷启动），不应据此决定是否终止
+- 首次调用时 `state.getIsAccepted()` 为 `false`（冷启动），不应据此决定是否终止
 - 实现可通过内部计数器统计调用次数来推导迭代次数
 
 ## 📚 相关文件
@@ -236,3 +245,4 @@ SimulatedAnnealing<double[]> sa =
 | `core/SimulatedAnnealing.java` | 主循环实现 |
 | `core/SAState.java` | 状态封装 |
 | `components/basiccomponents/` | 内置组件实现 |
+| `../../oa/components/terminationcondition/` | 通用终止条件（MaxCallTerminationCondition 等） |

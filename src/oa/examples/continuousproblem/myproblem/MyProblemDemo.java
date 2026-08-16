@@ -1,8 +1,10 @@
 package oa.examples.continuousproblem.myproblem;
 
 import oa.components.Recoders.*;
-import sa.components.basiccomponents.*;
-import sa.core.SimulatedAnnealing;
+import oa.components.terminationcondition.MaxCallTerminationCondition;
+import oa.examples.continuousproblem.ContinuousUniformSearch;
+import sa.BasicSA.SimulatedAnnealing;
+import sa.components.continuousproblem.*;
 
 public class MyProblemDemo {
     void main() {
@@ -11,11 +13,12 @@ public class MyProblemDemo {
         new <MyProblem>SimulatedAnnealing<double[]>(
             prob,
             new SABasicInitializer(100),
-            new SABasicPerturbation(),
+            new ContinuousUniformSearch(),
             new SABasicCoolingSchedule(0.99,100),
-            new SABasicTerminationCondition(10000)
+            new MaxCallTerminationCondition<double[]>(10000)
         );
-        BestRecorder<double[]> recorder = new BestRecorder<>(new MyProblem(2));
+        BestRecorder<double[]> recorder = new BestRecorder<>(prob);
+
         msa.solve(recorder);
         System.out.println(prob.evaluate(recorder.getBestX()));
         

@@ -1,4 +1,4 @@
-package oa.api;
+package oa.api.spi;
 
 /**
  * 可复用的统一契约，表示组件支持重置其内部状态以重新参与优化。
@@ -31,7 +31,7 @@ package oa.api;
  * 如果需要在不同问题之间切换，应重新构造组件实例并调用 {@code init}，
  * 而非仅依赖 {@code reset}。
  *
- * @see oa.api.Recorder
+ * @see oa.api.spi.Recorder
  * @see sa.core.SATerminationCondition
  */
 public interface Reusable {

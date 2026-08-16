@@ -2,7 +2,9 @@ package sa.core;
 
 import java.util.Random;
 
-import oa.api.Problem;
+import oa.api.problem.Problem;
+import oa.api.spi.Initializer;
+import sa.BasicSA.SimulatedAnnealing;
 
 /**
  * 初始化器，负责定义算法的起始状态：初始解和初始温度。
@@ -33,19 +35,7 @@ import oa.api.Problem;
  * @param <X>   解的表示类型（例如 {@code double[]}、{@code int[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class SAInitializer<X,Prob extends Problem<X>> {
-
-    /**
-     * 绑定具体问题实例，使初始化器能访问问题的维度和边界等信息。
-     * <p>
-     * 此方法应在构造完成后、首次调用 {@link #initialX()} 或 {@link #initialTemperature()} 之前调用。
-     * 通常由算法框架在构造阶段自动调用，实现者无需关心调用时机。
-     *
-     * @param problem 待求解问题，不为 {@code null}
-     * @param random 随机数生成器，由主算法统一创建并注入，组件应使用此实例进行所有随机操作
-     *               （如随机采样、随机初始化等），以保证结果可复现；不应自行创建新的 {@link Random} 实例
-     */
-    protected abstract void init(Prob problem,Random random);
+public interface SAInitializer<X,Prob extends Problem<X>> extends Initializer<X,Prob,SAState<X>> {
 
     /**
      * 生成搜索的起始解。
@@ -55,7 +45,7 @@ public abstract class SAInitializer<X,Prob extends Problem<X>> {
      *
      * @return 初始解（独立新对象）
      */
-    protected abstract X initialX();
+    X initialX();
 
     /**
      * 计算算法的起始温度。
@@ -65,5 +55,5 @@ public abstract class SAInitializer<X,Prob extends Problem<X>> {
      *
      * @return 初始温度，通常为正数
      */
-    protected abstract double initialTemperature();
+    double initialTemperature();
 }

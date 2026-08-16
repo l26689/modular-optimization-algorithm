@@ -2,7 +2,9 @@ package sa.core;
 
 import java.util.Random;
 
-import oa.api.Problem;
+import oa.api.problem.Problem;
+import oa.api.spi.Component;
+import sa.BasicSA.SimulatedAnnealing;
 
 /**
  * 冷却调度策略，定义温度如何随迭代逐步降低。
@@ -26,7 +28,7 @@ import oa.api.Problem;
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
+public interface SACoolingSchedule<X, Prob extends Problem<X>> extends Component<X,Prob,SAState<X>> {
 
     /**
      * 绑定问题实例，使冷却策略可获取问题的维度等元数据（多数冷却策略无需此信息，
@@ -39,7 +41,8 @@ public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
      *               （如自适应冷却中的随机采样），以保证结果可复现；不应自行创建新的 {@link Random} 实例
      * @throws NullPointerException 如果 problem 为 null
      */
-    protected abstract void init(Prob problem,Random random);
+    @Override
+    public abstract void init(Prob problem,Random random);
 
     /**
      * 计算下一轮的系统温度。
@@ -47,10 +50,10 @@ public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
      * 本方法每次迭代后调用一次，调用次数等于算法总迭代次数（非传统意义上的外循环）。
      * 传入的 {@link SAState} 封装了当前迭代的关键状态信息：
      * <ul>
-     *   <li>{@code state.currentX()} - 当前解（只读，不可原地修改）</li>
-     *   <li>{@code state.temperature()} - 当前温度</li>
-     *   <li>{@code state.isAccepted()} - 刚结束的本次迭代的接受结果，其值始终真实
-     *       （包括首次调用时），实现可直接据此调整温度。</li>
+     *   <li>{@code state.getCurrentXs()[0]} - 当前解（只读，不可原地修改）</li>
+ *   <li>{@code state.getTemperature()} - 当前温度</li>
+ *   <li>{@code state.getIsAccepted()} - 刚结束的本次迭代的接受结果，其值始终真实
+ *       （包括首次调用时），实现可直接据此调整温度。</li>
      * </ul>
      *
      * <h3>关于温度约束</h3>
@@ -61,5 +64,5 @@ public abstract class SACoolingSchedule<X, Prob extends Problem<X>> {
      * @param state 封装了当前迭代状态的 {@link SAState} 对象，包含当前解、当前温度和接受标志
      * @return 新的温度值，其合理性由实现类自行保证
      */
-    protected abstract double cool(SAState<X> state);
+    public abstract double cool(SAState<X> state);
 }

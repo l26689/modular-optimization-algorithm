@@ -1,8 +1,9 @@
 package oa.components.Recoders;
 
-import oa.api.Recorder;
-import oa.api.Problem;
-import oa.api.State;
+import oa.api.optimizationalgorithm.State;
+
+import oa.api.problem.Problem;
+import oa.api.spi.Recorder;
 
 
 public class LastRecorder<X,Y> implements Recorder<X,Problem<X>,State<X>> {
@@ -14,7 +15,8 @@ public class LastRecorder<X,Y> implements Recorder<X,Problem<X>,State<X>> {
     }
     @Override
     public void record(State<X> state) {
-            this.lastX = state.currentX();
+        X[] currentXs = state.getCurrentXs();
+        lastX = currentXs[currentXs.length - 1];
     }
     public X getLastX() {
         return prob.copyX(lastX);

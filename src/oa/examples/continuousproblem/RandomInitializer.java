@@ -1,23 +1,18 @@
-package sa.components.basiccomponents;
+package oa.examples.continuousproblem;
 
 import java.util.Random;
 
-import oa.examples.continuousproblem.ContinuousProblem;
-import sa.core.SAInitializer;
+import oa.api.optimizationalgorithm.State;
+import oa.api.spi.Initializer;
 
-public class SABasicInitializer extends SAInitializer<double[],ContinuousProblem> {
-    private double initialTemp;
+public class RandomInitializer<S extends State<double[]>> implements Initializer<double[],ContinuousProblem,S> {
     private int dim;
     private double[] lowerBounds;
     private double[] upperBounds;
     private Random random;
     
-    public SABasicInitializer(double initialTemp) {
-        this.initialTemp = initialTemp;
-    }
-    
     @Override
-    protected void init(ContinuousProblem problem,Random random) {
+    public void init(ContinuousProblem problem,Random random) {
         this.dim = problem.getDimension();
         this.lowerBounds = problem.getLowerBounds();
         this.upperBounds = problem.getUpperBounds();
@@ -25,7 +20,7 @@ public class SABasicInitializer extends SAInitializer<double[],ContinuousProblem
     }
     
     @Override
-    protected double[] initialX() {
+    public double[] initialX() {
         double[] x = new double[dim];
         for(int i = 0; i < dim; i++) {
             double range = upperBounds[i] - lowerBounds[i];
@@ -34,8 +29,4 @@ public class SABasicInitializer extends SAInitializer<double[],ContinuousProblem
         return x;
     }
     
-    @Override
-    protected double initialTemperature() {
-        return initialTemp;
-    }
 }

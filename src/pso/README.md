@@ -127,7 +127,7 @@ ParticleSwarmOptimization<double[]> pso =
     );
 
 // 4. 创建记录器并启动算法
-BestRecorder<double[]> recorder = new BestRecorder<>(problem);
+BestRecorder<double[]> recorder = new BestRecorder<>();
 pso.solve(recorder);
 
 // 5. 获取结果

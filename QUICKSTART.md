@@ -94,7 +94,7 @@ public class MyDemo {
             );
 
         // 3. 创建记录器并启动优化
-        BestRecorder<double[]> recorder = new BestRecorder<>(problem);
+        BestRecorder<double[]> recorder = new BestRecorder<>();
         sa.solve(recorder);
 
         // 4. 输出结果

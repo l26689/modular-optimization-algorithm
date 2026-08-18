@@ -198,7 +198,7 @@ ParticleSwarmOptimization<double[]> pso =
         new MaxCallTerminationCondition(10000)
     );
 
-BestRecorder<double[]> recorder = new BestRecorder<>(problem);
+BestRecorder<double[]> recorder = new BestRecorder<>();
 pso.solve(recorder);
 System.out.println("最优值: " + problem.evaluate(recorder.getBestX()));
 ```

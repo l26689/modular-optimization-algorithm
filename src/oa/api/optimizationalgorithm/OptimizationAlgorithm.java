@@ -20,6 +20,18 @@ import oa.api.spi.Recorder;
  * 而是通过 {@link Recorder} 参数对外提供。调用方在构造算法实例后，
  * 需同时准备一个 {@code Recorder} 子类实例，在 {@code solve()} 返回后
  * 从中获取最优解、搜索历史等结果。
+ * <p>
+ * 自本版本起，{@link Recorder} 继承自 {@link oa.api.spi.Component}，
+ * {@code solve()} 实现应在首次记录前调用 {@code recorder.init(problem, random)}
+ * 完成生命周期绑定，使得 Recorder 无需在构造时获取 Problem 引用。
+ *
+ * <h3>通配符设计</h3>
+ * {@code solve()} 的 Recorder 参数使用 {@code ? super Prob} 和
+ * {@code ? super S}（下界通配符），遵循 PECS 原则（Producer Extends, Consumer Super）：
+ * 算法通过 {@code init()} 向 Recorder"写入"问题实例和状态，因此 Recorder 的
+ * 类型参数应使用 {@code ? super}。这允许更泛化的 Recorder（如声明为
+ * {@code Recorder<X, Problem<X>, State<X>>}）被传入以具体问题类型
+ * 构造的算法实例，提升组件复用性。
  *
  * @param <X>    解的表示类型（例如 {@code double[]}、{@code int[]} 或自定义数据结构）
  * @param <Prob>  问题类型，必须实现 {@link Problem}{@code <X>}
@@ -39,6 +51,6 @@ public abstract class OptimizationAlgorithm<X,Prob extends Problem<X>, S extends
      * @param recorder 记录器，负责接收算法产生的解及其目标值；
      *                 优化结果通过 {@code recorder} 的特定方法（如 {@code getBestX()}）对外提供
      */
-    public abstract void solve(Recorder<X,? extends Prob,? super S> recorder);
+    public abstract void solve(Recorder<X,? super Prob,? super S> recorder);
 
 }

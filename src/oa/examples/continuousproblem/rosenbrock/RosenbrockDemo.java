@@ -9,15 +9,15 @@ import sa.components.continuousproblem.*;
 public class RosenbrockDemo {
     void main() {
         RosenbrockProblem prob = new RosenbrockProblem(2);
-        SimulatedAnnealing<double[]> msa = 
-        new <RosenbrockProblem>SimulatedAnnealing<double[]>(
+        SimulatedAnnealing<double[],RosenbrockProblem> msa = 
+        new SimulatedAnnealing<>(
             prob,
             new SABasicInitializer(100),
             new ContinuousUniformSearch(),
             new SABasicCoolingSchedule(0.99,100),
             new MaxCallTerminationCondition<double[]>(10000)
         );
-        LastRecorder<double[],Double> recorder = new LastRecorder<>(prob);
+        LastRecorder<double[],Double> recorder = new LastRecorder<>();
         msa.solve(recorder);
         System.out.println(prob.evaluate(recorder.getLastX()));
         

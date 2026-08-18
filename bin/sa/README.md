@@ -126,7 +126,7 @@ SimulatedAnnealing<double[]> sa =
     );
 
 // 3. 创建记录器并启动算法
-BestRecorder<double[]> recorder = new BestRecorder<>(problem);
+BestRecorder<double[]> recorder = new BestRecorder<>();
 sa.solve(recorder);
 
 // 4. 获取结果

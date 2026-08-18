@@ -71,11 +71,11 @@ import sa.core.SAState;
  *
  * @param <X> 解的表示类型（例如 {@code double[]}、{@code int[]}）
  */
-public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem<X>,BasicSAState<X>> {
-    private SAInitializer<X,? extends Problem<X>> initializer;//初始化器
-    private SearchOperator<X,? extends Problem<X>,? super SAState<X>> perturbation;//扰动器
-    private SACoolingSchedule<X,? extends Problem<X>> coolingSchedule;//冷却器
-    private TerminationCondition<X,? extends Problem<X>,? super SAState<X>> terminationCondition;//终止条件
+public final class SimulatedAnnealing<X,Prob extends Problem<X>> extends OptimizationAlgorithm<X,Prob,BasicSAState<X>> {
+    private SAInitializer<X,? super Prob> initializer;//初始化器
+    private SearchOperator<X,? super Prob,? super SAState<X>> perturbation;//扰动器
+    private SACoolingSchedule<X,? super Prob> coolingSchedule;//冷却器
+    private TerminationCondition<X,? super Prob,? super SAState<X>> terminationCondition;//终止条件
     private Random random;//随机数生成器，由外部或内部创建，统一注入到所有组件，确保随机性可复现
 
     /**
@@ -105,7 +105,7 @@ public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem
      * @param terminationCondition 终止条件，负责判断算法是否结束
      * @throws NullPointerException 如果任何参数为 {@code null}
      */
-    public <Prob extends Problem<X>>SimulatedAnnealing(
+    public SimulatedAnnealing(
         Prob problem ,
         SAInitializer<X,? super Prob> initializer,
         SearchOperator<X,? super Prob,? super SAState<X>> perturbation,
@@ -140,7 +140,7 @@ public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem
      * @param terminationCondition 终止条件，负责判断算法是否结束
      * @throws NullPointerException 如果任何参数为 {@code null}
      */
-    public <Prob extends Problem<X>>SimulatedAnnealing(
+    public SimulatedAnnealing(
         Random random,
         Prob problem ,
         SAInitializer<X,? super Prob> initializer,
@@ -164,6 +164,7 @@ public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem
      * <p>
      * 算法流程：
      * <ol>
+     *   <li>调用 {@code recorder.init(problem, random)} 完成 Recorder 的生命周期绑定。</li>
      *   <li>调用初始化器获得初始解 {@code currentX} 和初始温度。</li>
      *   <li>计算初始解的目标值。</li>
      *   <li>在每一轮迭代中：
@@ -238,7 +239,9 @@ public final class SimulatedAnnealing<X> extends OptimizationAlgorithm<X,Problem
      *                 优化结果通过 {@code recorder} 对外提供（如 {@code getBestX()}、{@code getHistory()} 等）
      */
     @Override
-    public final void  solve(Recorder<X,? extends Problem<X>,? super BasicSAState<X>> recorder){
+    public final void  solve(Recorder<X,? super Prob,? super BasicSAState<X>> recorder){
+        recorder.init(problem, random);
+
         double temperature= initializer.initialTemperature();
         X currentX = initializer.initialX();
         X newX = problem.copyX(currentX);

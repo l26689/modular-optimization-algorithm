@@ -43,7 +43,7 @@ MOA/
 │       ├── Initializer             # 初始化器接口
 │       ├── SearchOperator          # 搜索算子接口
 │       ├── TerminationCondition    # 终止条件接口
-│       ├── Recorder                # 记录器接口
+│       ├── Recorder                # 记录器接口（extends Component）
 │       └── Reusable                # 可复用契约
 ├── sa.core/                   # 模拟退火核心
 │   ├── SimulatedAnnealing     # 主循环控制器
@@ -91,15 +91,21 @@ public interface Evaluable<X, Y> {
 
 ### Recorder — 结果记录与评估（`oa.api.spi`）
 
-`solve()` 方法返回 `void`，优化结果通过 `Recorder` 对外提供。`Recorder` 是 SPI 层的通用接口，会收到 `State` 对象，内部通过 for-each 循环遍历解数组：
+`solve()` 方法返回 `void`，优化结果通过 `Recorder` 对外提供。`Recorder` 继承自 `Component`，
+遵循与其他组件相同的生命周期（构造 → `init(problem, random)` → 使用），
+`init()` 由算法在 `solve()` 入口统一调用，Recorder 无需在构造时获取 Problem 引用。
 
 ```java
-public interface Recorder<X, Prob extends Problem<X>, S extends State<X>> {
-    void record(S state);  // 在适当时机被算法调用
+public interface Recorder<X, Prob extends Problem<X>, S extends State<X>> extends Component<X, Prob, S> {
+    void init(Prob problem, Random random);  // 绑定问题实例
+    void record(S state);                     // 在适当时机被算法调用
 }
 ```
 
-内置 Recorder：
+`solve()` 的 Recorder 参数使用 `? super Prob`（下界通配符），遵循 PECS 原则，
+允许更泛化的 Recorder 被传入以具体问题类型构造的算法实例，提升组件复用性。
+
+内置 Recorder（均实现无参构造，无需在构造时传入 Problem）：
 - **BestRecorder** — 记录历史最优解（提供 `getBestX()`），内部通过 `compare()` 判断优劣
 - **LastRecorder** — 记录最后一次接受的解（提供 `getLastX()`）
 

@@ -9,16 +9,15 @@ import sa.components.continuousproblem.*;
 public class MyProblemDemo {
     void main() {
         MyProblem prob = new MyProblem(2);
-        SimulatedAnnealing<double[]> msa = 
-        new <MyProblem>SimulatedAnnealing<double[]>(
+        SimulatedAnnealing<double[],MyProblem> msa = 
+        new SimulatedAnnealing<>(
             prob,
             new SABasicInitializer(100),
             new ContinuousUniformSearch(),
             new SABasicCoolingSchedule(0.99,100),
             new MaxCallTerminationCondition<double[]>(10000)
         );
-        BestRecorder<double[]> recorder = new BestRecorder<>(prob);
-
+        BestRecorder<double[]> recorder = new BestRecorder<>();
         msa.solve(recorder);
         System.out.println(prob.evaluate(recorder.getBestX()));
         

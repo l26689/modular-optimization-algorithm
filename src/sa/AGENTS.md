@@ -178,7 +178,7 @@ SimulatedAnnealing<double[]> sa =
         new MaxCallTerminationCondition<double[]>(10000)
     );
 
-BestRecorder<double[]> recorder = new BestRecorder<>(problem);
+BestRecorder<double[]> recorder = new BestRecorder<>();
 sa.solve(recorder);
 System.out.println("最优值: " + problem.evaluate(recorder.getBestX()));
 ```

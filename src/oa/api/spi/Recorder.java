@@ -4,11 +4,19 @@ import oa.api.optimizationalgorithm.State;
 import oa.api.problem.Problem;
 
 /**
- * 算法记录员，负责记录优化过程中算法的状态信息,也可以作为算法性能评估的工具。
+ * 算法记录员，负责记录优化过程中算法的状态信息，也可以作为算法性能评估的工具。
  * <p>
- * 本抽象类定义了记录的通用契约：具体的记录策略（写入文件、存入内存列表、
- * 实时打印、推送至外部系统等）由子类实现。框架不关心记录格式和存储位置，
- * 仅保证在适当的时机调用 {@link #record(Object)}。
+ * 本接口继承自 {@link Component}，遵循与所有其他组件（{@link Initializer}、
+ * {@link SearchOperator}、{@link TerminationCondition}）相同的生命周期：
+ * <ol>
+ *   <li>构造（纯参数，不绑定 Problem）</li>
+ *   <li>{@link #init(Problem, java.util.Random)}（由算法在 {@code solve()} 入口统一调用，
+ *       注入 Problem 和 Random）</li>
+ *   <li>{@link #record(State)}（由算法在适当时机反复调用）</li>
+ * </ol>
+ * 具体的记录策略（写入文件、存入内存列表、实时打印、推送至外部系统等）
+ * 由子类实现。框架不关心记录格式和存储位置，仅保证在适当的时机调用
+ * {@link #record(State)}。
  *
  * <h3>记录时机</h3>
  * 记录的具体时机由调用方（具体的优化算法）决定，而非本类约束。
@@ -23,6 +31,8 @@ import oa.api.problem.Problem;
  *
  * <h3>实现要求</h3>
  * <ul>
+ *   <li>{@code init()} 中应保存 Problem 引用和 Random 实例，供后续
+ *       {@code record()} 使用（如评估解、比较解、随机采样等）。</li>
  *   <li>{@code record} 应快速返回，避免阻塞主优化循环。
  *       若涉及 I/O 等耗时操作，建议在子类中使用异步或缓冲机制。</li>
  *   <li>传入的 {@code state} 为静态副本，如需修改，请使用 {@link Problem#copyX()} 方法。</li>
@@ -41,10 +51,11 @@ import oa.api.problem.Problem;
  * 对"结果"的定义差异很大（单目标只需最优值，多目标需要 Pareto 前沿，
  * 调试场景需要完整轨迹），一刀切的抽象反而会限制灵活性。
  *
- * @param <X> 解的表示类型
- * @param <Prob> 优化问题的类型，必须是 {@link Problem<X>} 类的子类
+ * @param <X>    解的表示类型
+ * @param <Prob> 优化问题的类型，必须是 {@link Problem<X>} 的子类
+ * @param <S>    算法状态类型，必须是 {@link State<X>} 的子类
  */
-abstract public interface Recorder<X,Prob extends Problem<X>,S extends State<X>>{
+abstract public interface Recorder<X,Prob extends Problem<X>,S extends State<X>> extends Component<X,Prob,S>{
     /**
      * 记录一个解及其对应的目标值。
      * <p>

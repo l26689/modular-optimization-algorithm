@@ -43,7 +43,7 @@ import pso.core.Particle;
  *     new MaxCallTerminationCondition(10000)
  * );
  *
- * BestRecorder<double[]> recorder = new BestRecorder<>(problem);
+ * BestRecorder<double[]> recorder = new BestRecorder<>();
  * pso.solve(recorder);
  * }</pre>
  *
@@ -69,9 +69,11 @@ import pso.core.Particle;
  * @see pso.core.PSOState
  * @see pso.components.continuousproblem.StandardPSOParticle
  */
-public final class ParticleSwarmOptimization<X> extends OptimizationAlgorithm<X,Problem<X>,BasicPSOState<X>> {
-    private Particle<X,?,BasicPSOState<X>>[] particles;
-    private TerminationCondition<X,? extends Problem<X>,? super BasicPSOState<X>> terminationCondition;
+public final class ParticleSwarmOptimization<X,Prob extends Problem<X>> extends OptimizationAlgorithm<X,Prob,BasicPSOState<X>> {
+    private Particle<X,? super Prob,BasicPSOState<X>>[] particles;
+    private TerminationCondition<X,? super Prob,? super BasicPSOState<X>> terminationCondition;
+
+    private Random random;
 
     /**
      * 构造一个 PSO 算法实例（自动创建随机源）。
@@ -86,7 +88,7 @@ public final class ParticleSwarmOptimization<X> extends OptimizationAlgorithm<X,
      * @param terminationCondition 终止条件
      * @throws IllegalArgumentException 如果 particles 为空数组
      */
-    public <Prob extends Problem<X>> ParticleSwarmOptimization(
+    public ParticleSwarmOptimization(
         Prob problem,
         Particle<X,? super Prob,BasicPSOState<X>>[] particles,
         TerminationCondition<X,? super Prob,? super BasicPSOState<X>> terminationCondition) {
@@ -96,7 +98,7 @@ public final class ParticleSwarmOptimization<X> extends OptimizationAlgorithm<X,
         this.problem = problem;
         this.particles = particles;
         this.terminationCondition = terminationCondition;
-        Random random = new Random();
+        random = new Random();
         for (Particle<X,? super Prob,BasicPSOState<X>> particle : particles) {
             particle.init(problem,random);
         }
@@ -116,7 +118,7 @@ public final class ParticleSwarmOptimization<X> extends OptimizationAlgorithm<X,
      * @param terminationCondition 终止条件
      * @throws IllegalArgumentException 如果 particles 为空数组
      */
-    public <Prob extends Problem<X>> ParticleSwarmOptimization(
+    public ParticleSwarmOptimization(
         Random random,
         Prob problem,
         Particle<X,? super Prob,BasicPSOState<X>>[] particles,
@@ -124,6 +126,7 @@ public final class ParticleSwarmOptimization<X> extends OptimizationAlgorithm<X,
         if(particles.length == 0) {
             throw new IllegalArgumentException("particles.length must be greater than 0");
         }
+        this.random = random;
         this.problem = problem;
         this.particles = particles;
         this.terminationCondition = terminationCondition;
@@ -138,7 +141,8 @@ public final class ParticleSwarmOptimization<X> extends OptimizationAlgorithm<X,
      * <p>
      * 主循环流程：
      * <ol>
-     *   <li>调用各粒子的 {@link Particle#initialX()} 收集初始位置，
+     *   <li>调用 {@code recorder.init(problem, random)} 完成 Recorder 的生命周期绑定；</li>
+     *   <li>调用各粒子的 {@link Particle#initialX()} 收集初始位置，</li>
      *       构造初始 {@link BasicPSOState}；</li>
      *   <li>通过 {@link Recorder#record(oa.api.optimizationalgorithm.State)}
      *       记录初始状态；</li>
@@ -159,7 +163,8 @@ public final class ParticleSwarmOptimization<X> extends OptimizationAlgorithm<X,
      * @param recorder 状态记录器，用于收集迭代过程中的群体状态
      */
     @Override
-    public void solve(Recorder<X, ? extends Problem<X>, ? super BasicPSOState<X>> recorder) {
+    public void solve(Recorder<X, ? super Prob, ? super BasicPSOState<X>> recorder) {
+        recorder.init(problem, random);
 
         X tempX = particles[0].initialX();
         X[] currentPositions = (X[]) Array.newInstance(tempX.getClass(),particles.length);

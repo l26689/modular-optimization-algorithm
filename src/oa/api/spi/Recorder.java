@@ -55,7 +55,7 @@ import oa.api.problem.Problem;
  * @param <Prob> 优化问题的类型，必须是 {@link Problem<X>} 的子类
  * @param <S>    算法状态类型，必须是 {@link State<X>} 的子类
  */
-abstract public interface Recorder<X,Prob extends Problem<X>,S extends State<X>> extends Component<X,Prob,S>{
+public interface Recorder<X,Prob extends Problem<X>,S extends State<X>> extends Component<X,Prob,S>{
     /**
      * 记录一个解及其对应的目标值。
      * <p>

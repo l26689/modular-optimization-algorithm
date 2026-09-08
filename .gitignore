@@ -14,6 +14,7 @@ out/
 .classpath
 .project
 .settings/
+.vscode/
 
 # 操作系统文件
 .DS_Store

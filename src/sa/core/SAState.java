@@ -46,6 +46,7 @@ public class SAState<X> implements State<X> {
      * @param temperature 当前系统温度
      * @param isAccepted  上一轮迭代是否接受了新解；首次迭代时应为 {@code false}
      */
+    @SuppressWarnings("unchecked")
     public SAState(X currentX, double temperature, boolean isAccepted) {
         this.currentXs = (X[]) Array.newInstance(currentX.getClass(), 1);
         this.currentXs[0] = currentX;

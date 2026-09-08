@@ -163,6 +163,7 @@ public final class ParticleSwarmOptimization<X,Prob extends Problem<X>> extends 
      * @param recorder 状态记录器，用于收集迭代过程中的群体状态
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void solve(Recorder<X, ? super Prob, ? super BasicPSOState<X>> recorder) {
         recorder.init(problem, random);
 

@@ -14,7 +14,7 @@ public class RosenbrockDemo {
             prob,
             new SABasicInitializer(100),
             new ContinuousUniformSearch(),
-            new SABasicCoolingSchedule(0.99,100),
+            new SABasicCoolingSchedule<>(0.99,100),
             new MaxCallTerminationCondition<double[]>(10000)
         );
         LastRecorder<double[],Double> recorder = new LastRecorder<>();

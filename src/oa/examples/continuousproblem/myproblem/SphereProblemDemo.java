@@ -6,15 +6,15 @@ import oa.examples.continuousproblem.ContinuousUniformSearch;
 import sa.BasicSA.SimulatedAnnealing;
 import sa.components.continuousproblem.*;
 
-public class MyProblemDemo {
+public class SphereProblemDemo {
     void main() {
-        MyProblem prob = new MyProblem(2);
-        SimulatedAnnealing<double[],MyProblem> msa = 
+        SphereProblem prob = new SphereProblem(2);
+        SimulatedAnnealing<double[],SphereProblem> msa = 
         new SimulatedAnnealing<>(
             prob,
             new SABasicInitializer(100),
             new ContinuousUniformSearch(),
-            new SABasicCoolingSchedule(0.99,100),
+            new SABasicCoolingSchedule<>(0.99,100),
             new MaxCallTerminationCondition<double[]>(10000)
         );
         BestRecorder<double[]> recorder = new BestRecorder<>();

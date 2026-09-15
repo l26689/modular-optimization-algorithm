@@ -1,4 +1,4 @@
-package oa.examples.continuousproblem.myproblem;
+package oa.examples.continuousproblem.sphereproblem;
 
 import oa.components.Recoders.*;
 import oa.components.terminationcondition.MaxCallTerminationCondition;

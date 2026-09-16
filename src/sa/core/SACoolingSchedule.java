@@ -3,7 +3,7 @@ package sa.core;
 import java.util.Random;
 
 import oa.api.problem.Problem;
-import oa.api.spi.Component;
+import oa.api.spi.component.Component;
 import sa.BasicSA.SimulatedAnnealing;
 
 /**

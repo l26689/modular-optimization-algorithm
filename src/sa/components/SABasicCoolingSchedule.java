@@ -1,4 +1,4 @@
-package sa.components.continuousproblem;
+package sa.components;
 
 import sa.core.SACoolingSchedule;
 import sa.core.SAState;

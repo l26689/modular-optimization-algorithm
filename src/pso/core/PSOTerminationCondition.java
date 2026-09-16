@@ -1,7 +1,7 @@
 package pso.core;
 
 import oa.api.problem.Problem;
-import oa.api.spi.TerminationCondition;
+import oa.api.spi.component.TerminationCondition;
 
 /**
  * PSO 算法的终止条件接口。

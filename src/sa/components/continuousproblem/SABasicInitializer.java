@@ -1,7 +1,7 @@
 package sa.components.continuousproblem;
 
+import oa.components.initializers.RandomInitializer;
 import oa.examples.continuousproblem.ContinuousProblem;
-import oa.examples.continuousproblem.RandomInitializer;
 import sa.core.SAInitializer;
 import sa.core.SAState;
 

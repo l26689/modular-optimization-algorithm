@@ -1,4 +1,4 @@
-package oa.components.Recoders;
+package oa.components.recoders;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -31,8 +31,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 import oa.api.optimizationalgorithm.State;
 import oa.api.problem.Evaluable;
 import oa.api.problem.Problem;
-import oa.api.spi.Recorder;
 import oa.api.spi.Reusable;
+import oa.api.spi.component.Recorder;
 
 public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> implements Recorder<X, Prob, State<X>>, Reusable {
 
@@ -227,6 +227,26 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
             names.add(uniqueName);
         }
         return names;
+    }
+
+    public void printConvergenceData() {
+        Map<String, RunData> merged = buildMergedRunMap();
+        if (merged.isEmpty()) {
+            System.out.println("[ConvergenceRecorder] No data.");
+            return;
+        }
+        for (Map.Entry<String, RunData> entry : merged.entrySet()) {
+            RunData data = entry.getValue();
+            if (data.values.isEmpty()) continue;
+            double first = data.values.get(0);
+            double last = data.values.get(data.values.size() - 1);
+            double best = Double.NaN;
+            for (double v : data.values) {
+                if (Double.isNaN(best) || v < best) best = v;
+            }
+            System.out.printf("%s: points=%d  first=%.4e  last=%.4e  best=%.4e%n",
+                entry.getKey(), data.values.size(), first, last, best);
+        }
     }
 
     public void visualize() {

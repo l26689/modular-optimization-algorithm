@@ -1,10 +1,10 @@
-package oa.components.Recoders;
+package oa.components.recoders;
 
 import java.util.Random;
 
 import oa.api.optimizationalgorithm.State;
 import oa.api.problem.Problem;
-import oa.api.spi.Recorder;
+import oa.api.spi.component.Recorder;
 
 /**
  * 历史最优解记录器，在每次 {@link #record(State)} 调用中自动维护全局最优解。

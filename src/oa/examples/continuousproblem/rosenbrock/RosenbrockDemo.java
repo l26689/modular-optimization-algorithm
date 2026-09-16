@@ -1,9 +1,10 @@
 package oa.examples.continuousproblem.rosenbrock;
 
-import oa.components.Recoders.*;
+import oa.components.recoders.*;
+import oa.components.searchoperators.ContinuousUniformSearch;
 import oa.components.terminationcondition.MaxCallTerminationCondition;
-import oa.examples.continuousproblem.ContinuousUniformSearch;
 import sa.BasicSA.SimulatedAnnealing;
+import sa.components.SABasicCoolingSchedule;
 import sa.components.continuousproblem.*;
 
 public class RosenbrockDemo {

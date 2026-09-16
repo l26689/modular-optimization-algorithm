@@ -5,8 +5,8 @@ import java.util.Random;
 
 import oa.api.optimizationalgorithm.OptimizationAlgorithm;
 import oa.api.problem.Problem;
-import oa.api.spi.Recorder;
-import oa.api.spi.TerminationCondition;
+import oa.api.spi.component.Recorder;
+import oa.api.spi.component.TerminationCondition;
 import pso.core.Particle;
 
 /**

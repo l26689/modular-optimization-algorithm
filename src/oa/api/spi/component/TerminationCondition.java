@@ -1,7 +1,8 @@
-package oa.api.spi;
+package oa.api.spi.component;
 
 import oa.api.optimizationalgorithm.State;
 import oa.api.problem.Problem;
+import oa.api.spi.Reusable;
 
 /**
  * 终止条件的统一接口，定义了优化算法中判断搜索何时停止的契约。

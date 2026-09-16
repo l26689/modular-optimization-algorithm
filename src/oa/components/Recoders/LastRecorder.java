@@ -1,11 +1,11 @@
-package oa.components.Recoders;
+package oa.components.recoders;
 
 import java.util.Random;
 
 import oa.api.optimizationalgorithm.State;
 
 import oa.api.problem.Problem;
-import oa.api.spi.Recorder;
+import oa.api.spi.component.Recorder;
 
 /**
  * 最近解记录器，保存最后一次记录的状态中的最后一个解。

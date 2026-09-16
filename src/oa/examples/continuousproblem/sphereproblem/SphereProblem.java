@@ -2,7 +2,7 @@ package oa.examples.continuousproblem.sphereproblem;
 
 import oa.examples.continuousproblem.ContinuousProblem;
 
-public class SphereProblem extends ContinuousProblem {
+public final class SphereProblem extends ContinuousProblem {
 
     public SphereProblem(int dimension) {
         super(createBounds(dimension, -100), createBounds(dimension, 100));

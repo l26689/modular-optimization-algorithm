@@ -4,8 +4,8 @@ import java.util.Random;
 
 import oa.api.optimizationalgorithm.State;
 import oa.api.problem.Problem;
-import oa.api.spi.Initializer;
-import oa.api.spi.SearchOperator;
+import oa.api.spi.component.Initializer;
+import oa.api.spi.component.SearchOperator;
 import pso.core.Particle;
 
 /**

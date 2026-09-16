@@ -1,7 +1,7 @@
 package sa.core;
 
 import oa.api.problem.Problem;
-import oa.api.spi.TerminationCondition;
+import oa.api.spi.component.TerminationCondition;
 import sa.BasicSA.SimulatedAnnealing;
 
 /**

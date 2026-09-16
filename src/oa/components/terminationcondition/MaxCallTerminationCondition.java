@@ -5,7 +5,7 @@ import java.util.Random;
 import oa.api.optimizationalgorithm.State;
 import oa.api.problem.Problem;
 import oa.api.spi.Reusable;
-import oa.api.spi.TerminationCondition;
+import oa.api.spi.component.TerminationCondition;
 
 /**
  * 基于总调用次数的终止条件，在 {@link #check()} 被调用指定次数后停止搜索。

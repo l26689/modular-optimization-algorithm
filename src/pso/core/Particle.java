@@ -2,8 +2,8 @@ package pso.core;
 
 import oa.api.optimizationalgorithm.State;
 import oa.api.problem.Problem;
-import oa.api.spi.Initializer;
-import oa.api.spi.SearchOperator;
+import oa.api.spi.component.Initializer;
+import oa.api.spi.component.SearchOperator;
 
 /**
  * PSO 粒子的统一接口，将初始化和搜索两种能力合二为一。

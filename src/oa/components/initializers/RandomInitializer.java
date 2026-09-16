@@ -1,9 +1,10 @@
-package oa.examples.continuousproblem;
+package oa.components.initializers;
 
 import java.util.Random;
 
 import oa.api.optimizationalgorithm.State;
-import oa.api.spi.Initializer;
+import oa.api.spi.component.Initializer;
+import oa.examples.continuousproblem.ContinuousProblem;
 
 public class RandomInitializer<S extends State<double[]>> implements Initializer<double[],ContinuousProblem,S> {
     private int dim;

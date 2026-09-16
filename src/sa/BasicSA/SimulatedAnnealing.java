@@ -4,9 +4,9 @@ import java.util.Random;
 
 import oa.api.optimizationalgorithm.OptimizationAlgorithm;
 import oa.api.problem.Problem;
-import oa.api.spi.Recorder;
-import oa.api.spi.SearchOperator;
-import oa.api.spi.TerminationCondition;
+import oa.api.spi.component.Recorder;
+import oa.api.spi.component.SearchOperator;
+import oa.api.spi.component.TerminationCondition;
 import sa.core.SACoolingSchedule;
 import sa.core.SAInitializer;
 import sa.core.SAState;
@@ -19,7 +19,7 @@ import sa.core.SAState;
  * <ol>
  *   <li>获取初始解与初始温度</li>
  *   <li>迭代：扰动 → 评估 → Metropolis 接受准则 → 冷却 → 检查终止</li>
- *   <li>通过 {@link oa.api.spi.Recorder} 输出优化结果</li>
+ *   <li>通过 {@link oa.api.spi.component.Recorder} 输出优化结果</li>
  * </ol>
  *
  * <h3>问题类型绑定</h3>
@@ -212,7 +212,7 @@ public final class SimulatedAnnealing<X,Prob extends Problem<X>> extends Optimiz
      * 而非零，使接受概率略低于 1。这与当前框架的偏序设计完全兼容。
      *
      * <h3>Recorder 记录策略</h3>
-     * 模拟退火的 {@link oa.api.spi.Recorder} 遵循<b>仅记录被接受解</b>的策略：
+     * 模拟退火的 {@link oa.api.spi.component.Recorder} 遵循<b>仅记录被接受解</b>的策略：
      * 每轮迭代中，只有当候选解被接受（无论是因更优而确定性接受，还是因 Metropolis
      * 准则而概率性接受）时，才会调用 {@code recorder.record(newX, newValue)}。
      * 被拒绝的候选解不会触发记录。这一策略确保记录的历史序列完整反映了

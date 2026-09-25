@@ -1,6 +1,4 @@
-package oa.examples.continuousproblem.sphereproblem;
-
-import oa.examples.continuousproblem.ContinuousProblem;
+package oa.components.problems.coninuousproblem;
 
 public final class SphereProblem extends ContinuousProblem {
 

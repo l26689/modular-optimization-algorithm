@@ -28,7 +28,7 @@ import sa.BasicSA.SimulatedAnnealing;
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public interface SACoolingSchedule<X, Prob extends Problem<X>> extends Component<X,Prob,SAState<X>> {
+public interface SACoolingSchedule<X, Prob extends Problem<X>,S extends SAState<X>> extends Component<X,Prob,S> {
 
     /**
      * 绑定问题实例，使冷却策略可获取问题的维度等元数据（多数冷却策略无需此信息，
@@ -64,5 +64,5 @@ public interface SACoolingSchedule<X, Prob extends Problem<X>> extends Component
      * @param state 封装了当前迭代状态的 {@link SAState} 对象，包含当前解、当前温度和接受标志
      * @return 新的温度值，其合理性由实现类自行保证
      */
-    public abstract double cool(SAState<X> state);
+    public abstract double cool(S state);
 }

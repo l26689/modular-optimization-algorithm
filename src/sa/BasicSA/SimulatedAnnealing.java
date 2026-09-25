@@ -73,9 +73,9 @@ import sa.core.SAState;
  */
 public final class SimulatedAnnealing<X,Prob extends Problem<X>> extends OptimizationAlgorithm<X,Prob,BasicSAState<X>> {
     private SAInitializer<X,? super Prob> initializer;//初始化器
-    private SearchOperator<X,? super Prob,? super SAState<X>> perturbation;//扰动器
-    private SACoolingSchedule<X,? super Prob> coolingSchedule;//冷却器
-    private TerminationCondition<X,? super Prob,? super SAState<X>> terminationCondition;//终止条件
+    private SearchOperator<X,? super Prob,? super BasicSAState<X>> perturbation;//扰动器
+    private SACoolingSchedule<X,? super Prob,? super BasicSAState<X>> coolingSchedule;//冷却器
+    private TerminationCondition<X,? super Prob,? super BasicSAState<X>> terminationCondition;//终止条件
     private Random random;//随机数生成器，由外部或内部创建，统一注入到所有组件，确保随机性可复现
 
     /**
@@ -108,9 +108,9 @@ public final class SimulatedAnnealing<X,Prob extends Problem<X>> extends Optimiz
     public SimulatedAnnealing(
         Prob problem ,
         SAInitializer<X,? super Prob> initializer,
-        SearchOperator<X,? super Prob,? super SAState<X>> perturbation,
-        SACoolingSchedule<X,? super Prob> coolingSchedule,
-        TerminationCondition<X,? super Prob,? super SAState<X>> terminationCondition){
+        SearchOperator<X,? super Prob,? super BasicSAState<X>> perturbation,
+        SACoolingSchedule<X,? super Prob,? super BasicSAState<X>> coolingSchedule,
+        TerminationCondition<X,? super Prob,? super BasicSAState<X>> terminationCondition){
             this.problem = problem;
             this.initializer = initializer;
             this.perturbation = perturbation;
@@ -144,9 +144,9 @@ public final class SimulatedAnnealing<X,Prob extends Problem<X>> extends Optimiz
         Random random,
         Prob problem ,
         SAInitializer<X,? super Prob> initializer,
-        SearchOperator<X,? super Prob,? super SAState<X>> perturbation,
-        SACoolingSchedule<X,? super Prob> coolingSchedule,
-        TerminationCondition<X,? super Prob,? super SAState<X>> terminationCondition){
+        SearchOperator<X,? super Prob,? super BasicSAState<X>> perturbation,
+        SACoolingSchedule<X,? super Prob,? super BasicSAState<X>> coolingSchedule,
+        TerminationCondition<X,? super Prob,? super BasicSAState<X>> terminationCondition){
             this.problem = problem;
             this.initializer = initializer;
             this.perturbation = perturbation;

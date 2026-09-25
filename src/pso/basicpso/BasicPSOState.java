@@ -1,5 +1,6 @@
 package pso.basicpso;
 
+import oa.components.state.LongLifeState;
 import pso.core.PSOState;
 
 /**
@@ -28,7 +29,7 @@ import pso.core.PSOState;
  * @see PSOState
  * @see ParticleSwarmOptimization
  */
-public final class BasicPSOState<X> extends PSOState<X> {
+public final class BasicPSOState<X> extends LongLifeState<X> implements PSOState<X> {
 
     /**
      * 构造一个基础 PSO 状态对象。
@@ -38,5 +39,6 @@ public final class BasicPSOState<X> extends PSOState<X> {
     public BasicPSOState(X[] positions) {
         super(positions);
     }
+    
 
 }

@@ -4,7 +4,7 @@ import java.util.Random;
 
 import oa.api.optimizationalgorithm.State;
 import oa.api.spi.component.SearchOperator;
-import oa.examples.continuousproblem.ContinuousProblem;
+import oa.components.problems.coninuousproblem.ContinuousProblem;
 
 /**
  * 连续空间均匀邻域搜索算子，直接实现 SPI 层的 {@link SearchOperator} 接口。

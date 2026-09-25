@@ -1,6 +1,4 @@
-package oa.examples.continuousproblem.rosenbrock;
-
-import oa.examples.continuousproblem.ContinuousProblem;
+package oa.components.problems.coninuousproblem;
 
 // Rosenbrock 函数：经典的非凸函数，又称“香蕉函数”
 // 公式：f(x) = Σ[100*(x_{i+1} - x_i²)² + (1 - x_i)²]

@@ -6,7 +6,7 @@ import java.util.Random;
 
 import oa.api.problem.Problem;
 
-public final class SABasicCoolingSchedule<X> implements SACoolingSchedule<X,Problem<X>> {
+public final class SABasicCoolingSchedule<X> implements SACoolingSchedule<X,Problem<X>,SAState<X>> {
     private double coolingRate;
     private int currentIteration;
     private int maxIterations;

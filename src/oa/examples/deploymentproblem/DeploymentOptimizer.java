@@ -5,7 +5,7 @@ import java.util.Random;
 import oa.components.recoders.BestRecorder;
 import oa.components.terminationcondition.MaxCallTerminationCondition;
 import sa.BasicSA.SimulatedAnnealing;
-import sa.components.SABasicCoolingSchedule;
+import sa.components.SAAdaptiveCoolingSchedule;
 
 /**
  * 部署问题优化器主入口，通过命令行参数接收场景信息，运行 SA 优化并输出结果。
@@ -54,10 +54,12 @@ public class DeploymentOptimizer {
                 params.actionCount, params.maxTotal, 50.0),
                 new DeploymentPerturbation(
                 params.actionCount, params.maxTotal), 
-                new SABasicCoolingSchedule<int[]>(0.99, 100), 
+                new SAAdaptiveCoolingSchedule<int[]>(0.44,0.99,0.8,1.4,100, 100), 
                 new MaxCallTerminationCondition<>(10000));
 
         BestRecorder<int[]> recorder = new BestRecorder<>();
+
+        // 运行 SA 优化并计时
         long startTime = System.currentTimeMillis();
         sa.solve(recorder);
         long elapsedMs = System.currentTimeMillis() - startTime;
@@ -65,6 +67,7 @@ public class DeploymentOptimizer {
         int[] bestActionIds = recorder.getBestX();
         double[] bestObjective = problem.evaluate(bestActionIds);
 
+        // 输出 SA 优化结果
         System.err.printf("SA 优化完成: 耗时 %dms, 最优解 = %d 个设备, [detection=%.1f%%, attack=%.1f%%]%n",
                 elapsedMs, bestActionIds.length, bestObjective[0], bestObjective[1]);
 

@@ -1,5 +1,6 @@
 package oa.examples.continuousproblem.sphereproblem;
 
+import oa.components.problems.coninuousproblem.SphereProblem;
 import oa.components.recoders.*;
 import oa.components.searchoperators.ContinuousUniformSearch;
 import oa.components.terminationcondition.MaxCallTerminationCondition;

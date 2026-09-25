@@ -55,7 +55,7 @@ import oa.api.spi.component.SearchOperator;
  * @see pso.components.CustomParticle
  * @see pso.components.continuousproblem.StandardPSOParticle
  */
-public interface Particle<X,Prob extends Problem<X>,S extends State<X>> 
+public interface Particle<X,Prob extends Problem<X>,S extends PSOState<X>> 
 extends Initializer<X,Prob,S>,
 SearchOperator<X,Prob,S> {
 }

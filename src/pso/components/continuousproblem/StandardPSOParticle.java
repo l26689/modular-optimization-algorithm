@@ -2,7 +2,7 @@ package pso.components.continuousproblem;
 
 import java.util.Random;
 
-import oa.examples.continuousproblem.ContinuousProblem;
+import oa.components.problems.coninuousproblem.ContinuousProblem;
 import pso.core.PSOState;
 import pso.core.Particle;
 

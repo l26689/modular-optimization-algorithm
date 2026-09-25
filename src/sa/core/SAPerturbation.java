@@ -3,7 +3,7 @@ package sa.core;
 import java.util.Random;
 
 import oa.api.problem.Problem;
-import oa.api.spi.SearchOperator;
+import oa.api.spi.component.SearchOperator;
 import sa.BasicSA.SimulatedAnnealing;
 
 /**
@@ -57,7 +57,7 @@ import sa.BasicSA.SimulatedAnnealing;
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public interface SAPerturbation<X, Prob extends Problem<X>> extends SearchOperator<X, Prob, SAState<X>> {
+public interface SAPerturbation<X, Prob extends Problem<X>,S extends SAState<X>> extends SearchOperator<X, Prob,S> {
 
     /**
      * 绑定问题实例，使扰动器获取问题的维度、边界等元数据。

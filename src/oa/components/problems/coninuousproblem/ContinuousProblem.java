@@ -1,4 +1,4 @@
-package oa.examples.continuousproblem;
+package oa.components.problems.coninuousproblem;
 
 import oa.api.problem.Evaluable;
 import oa.api.problem.Problem;

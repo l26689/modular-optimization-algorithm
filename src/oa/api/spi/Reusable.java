@@ -31,7 +31,7 @@ package oa.api.spi;
  * 如果需要在不同问题之间切换，应重新构造组件实例并调用 {@code init}，
  * 而非仅依赖 {@code reset}。
  *
- * @see oa.api.spi.Recorder
+ * @see oa.api.spi.component.Recorder
  * @see sa.core.SATerminationCondition
  */
 public interface Reusable {

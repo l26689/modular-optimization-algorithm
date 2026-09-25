@@ -1,12 +1,12 @@
-package sa.components.continuousproblem;
+package sa.components;
 
 import sa.core.SACoolingSchedule;
 import sa.core.SAState;
 import java.util.Random;
 
-import oa.examples.continuousproblem.ContinuousProblem;
+import oa.api.problem.Problem;
 
-public final class SABasicCoolingSchedule implements SACoolingSchedule<double[],ContinuousProblem> {
+public final class SABasicCoolingSchedule<X> implements SACoolingSchedule<X,Problem<X>,SAState<X>> {
     private double coolingRate;
     private int currentIteration;
     private int maxIterations;
@@ -18,12 +18,12 @@ public final class SABasicCoolingSchedule implements SACoolingSchedule<double[],
     }
     
     @Override
-    public void init(ContinuousProblem problem,Random random) {
+    public void init(Problem<X> problem,Random random) {
         // 初始化操作
     }
     
     @Override
-    public double cool(SAState<double[]> state) {
+    public double cool(SAState<X> state) {
         double temperature = state.getTemperature();
         currentIteration++;
         if(currentIteration > maxIterations) {

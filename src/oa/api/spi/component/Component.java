@@ -1,7 +1,8 @@
-package oa.api.spi;
+package oa.api.spi.component;
 
 import oa.api.optimizationalgorithm.State;
 import oa.api.problem.Problem;
+import oa.api.spi.Reusable;
 
 import java.util.Random;
 /**

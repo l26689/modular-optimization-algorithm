@@ -14,6 +14,7 @@ out/
 .classpath
 .project
 .settings/
+.vscode/
 
 # 操作系统文件
 .DS_Store
@@ -21,3 +22,6 @@ Thumbs.db
 
 # 测试输出
 /src/test/
+
+# 测试类
+oa/components/problems/deploymentproblem/

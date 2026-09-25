@@ -1,7 +1,7 @@
 package oa.api.optimizationalgorithm;
 
 import oa.api.problem.Problem;
-import oa.api.spi.Recorder;
+import oa.api.spi.component.Recorder;
 
 /**
  * 优化算法的抽象基类。
@@ -21,7 +21,7 @@ import oa.api.spi.Recorder;
  * 需同时准备一个 {@code Recorder} 子类实例，在 {@code solve()} 返回后
  * 从中获取最优解、搜索历史等结果。
  * <p>
- * 自本版本起，{@link Recorder} 继承自 {@link oa.api.spi.Component}，
+ * 自本版本起，{@link Recorder} 继承自 {@link oa.api.spi.component.Component}，
  * {@code solve()} 实现应在首次记录前调用 {@code recorder.init(problem, random)}
  * 完成生命周期绑定，使得 Recorder 无需在构造时获取 Problem 引用。
  *

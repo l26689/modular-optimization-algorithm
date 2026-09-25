@@ -1,10 +1,8 @@
-package oa.examples.continuousproblem.myproblem;
+package oa.components.problems.coninuousproblem;
 
-import oa.examples.continuousproblem.ContinuousProblem;
+public final class SphereProblem extends ContinuousProblem {
 
-public class MyProblem extends ContinuousProblem {
-
-    public MyProblem(int dimension) {
+    public SphereProblem(int dimension) {
         super(createBounds(dimension, -100), createBounds(dimension, 100));
     }
 

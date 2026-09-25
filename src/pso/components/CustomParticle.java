@@ -4,8 +4,9 @@ import java.util.Random;
 
 import oa.api.optimizationalgorithm.State;
 import oa.api.problem.Problem;
-import oa.api.spi.Initializer;
-import oa.api.spi.SearchOperator;
+import oa.api.spi.component.Initializer;
+import oa.api.spi.component.SearchOperator;
+import pso.core.PSOState;
 import pso.core.Particle;
 
 /**
@@ -48,7 +49,7 @@ import pso.core.Particle;
  * @see Particle
  * @see pso.components.continuousproblem.StandardPSOParticle
  */
-public final class CustomParticle<X,Prob extends Problem<X>,S extends State<X>> implements Particle<X,Prob,S> {
+public final class CustomParticle<X,Prob extends Problem<X>,S extends PSOState<X>> implements Particle<X,Prob,S> {
     private final Initializer<X, ? super Prob, ? super S> initializer;
     private final SearchOperator<X,? super Prob,? super S> searchOperator;
 

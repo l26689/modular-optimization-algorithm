@@ -1,7 +1,7 @@
 package sa.core;
 
 import oa.api.problem.Problem;
-import oa.api.spi.TerminationCondition;
+import oa.api.spi.component.TerminationCondition;
 import sa.BasicSA.SimulatedAnnealing;
 
 /**
@@ -38,8 +38,8 @@ import sa.BasicSA.SimulatedAnnealing;
  * @param <X>   解的表示类型（例如 {@code double[]}）
  * @param <Prob> 问题类型，必须实现 {@link Problem}{@code <X>}
  */
-public interface SATerminationCondition<X, Prob extends Problem<X>>
-        extends TerminationCondition<X, Prob, SAState<X>> {
+public interface SATerminationCondition<X, Prob extends Problem<X>,S extends SAState<X>>
+        extends TerminationCondition<X, Prob,S> {
 
     /**
      * 检查当前是否满足终止条件。
@@ -58,5 +58,5 @@ public interface SATerminationCondition<X, Prob extends Problem<X>>
      *         {@code false} 表示继续搜索
      */
     @Override
-    boolean check(SAState<X> state);
+    boolean check(S state);
 }

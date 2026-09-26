@@ -4,7 +4,7 @@ import java.util.Random;
 
 import oa.api.problem.Problem;
 import oa.api.spi.component.SearchOperator;
-import sa.BasicSA.SimulatedAnnealing;
+import sa.basicsa.SimulatedAnnealing;
 
 /**
  * 模拟退火扰动器，定义如何从当前解生成邻域候选解。

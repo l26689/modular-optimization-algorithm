@@ -4,7 +4,7 @@ import java.util.Random;
 
 import oa.api.problem.Problem;
 import oa.api.spi.component.Component;
-import sa.BasicSA.SimulatedAnnealing;
+import sa.basicsa.SimulatedAnnealing;
 
 /**
  * 冷却调度策略，定义温度如何随迭代逐步降低。

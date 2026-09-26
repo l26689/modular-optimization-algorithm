@@ -4,7 +4,7 @@ import java.util.Random;
 
 import oa.components.recoders.BestRecorder;
 import oa.components.terminationcondition.MaxCallTerminationCondition;
-import sa.BasicSA.SimulatedAnnealing;
+import sa.basicsa.SimulatedAnnealing;
 import sa.components.SAAdaptiveCoolingSchedule;
 
 /**

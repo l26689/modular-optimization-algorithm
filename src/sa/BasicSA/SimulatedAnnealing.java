@@ -1,4 +1,4 @@
-package sa.BasicSA;
+package sa.basicsa;
 
 import java.util.Random;
 

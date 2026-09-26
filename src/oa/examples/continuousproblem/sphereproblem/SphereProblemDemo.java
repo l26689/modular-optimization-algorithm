@@ -4,7 +4,7 @@ import oa.components.problems.coninuousproblem.SphereProblem;
 import oa.components.recoders.*;
 import oa.components.searchoperators.ContinuousUniformSearch;
 import oa.components.terminationcondition.MaxCallTerminationCondition;
-import sa.BasicSA.SimulatedAnnealing;
+import sa.basicsa.SimulatedAnnealing;
 import sa.components.SABasicCoolingSchedule;
 import sa.components.continuousproblem.*;
 

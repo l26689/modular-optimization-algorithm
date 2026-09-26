@@ -2,7 +2,7 @@ package sa.core;
 
 import oa.api.problem.Problem;
 import oa.api.spi.component.TerminationCondition;
-import sa.BasicSA.SimulatedAnnealing;
+import sa.basicsa.SimulatedAnnealing;
 
 /**
  * SA 终止条件接口，判断模拟退火算法何时停止迭代。

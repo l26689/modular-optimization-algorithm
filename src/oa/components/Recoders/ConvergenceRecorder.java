@@ -1,11 +1,10 @@
 package oa.components.recoders;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -13,7 +12,6 @@ import java.util.Map;
 import java.util.Random;
 
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import org.jfree.chart.ChartFactory;
@@ -21,6 +19,7 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -33,7 +32,6 @@ import oa.api.problem.Evaluable;
 import oa.api.problem.Problem;
 import oa.api.spi.Reusable;
 import oa.api.spi.component.Recorder;
-
 public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> implements Recorder<X, Prob, State<X>>, Reusable {
 
     private Prob prob;
@@ -76,7 +74,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
             this.values = new ArrayList<>();
         }
     }
-
     public ConvergenceRecorder() {
         this(DEFAULT_RUN_NAME, DEFAULT_INTERVAL);
     }
@@ -104,17 +101,24 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
             return;
         }
 
+        X localBest = null;
         for (X x : currentXs) {
             if (x == null) {
                 continue;
             }
-            if (bestX == null || prob.compare(x, bestX) > 0) {
-                bestX = prob.copyX(x);
+            if (localBest == null || prob.compare(x, localBest) > 0) {
+                localBest = x;
             }
         }
 
-        if (callCount % recordInterval == 0) {
-            double objectiveValue = computeObjectiveValue(bestX);
+        if (localBest != null) {
+            if (bestX == null || prob.compare(localBest, bestX) > 0) {
+                bestX = prob.copyX(localBest);
+            }
+        }
+
+        if (callCount % recordInterval == 0 && localBest != null) {
+            double objectiveValue = computeObjectiveValue(localBest);
             currentConvergenceValues.add(objectiveValue);
             currentIterations.add(callCount);
         }
@@ -207,7 +211,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         }
         return computeObjectiveValue(bestX);
     }
-
     public int getCallCount() {
         return callCount;
     }
@@ -259,24 +262,100 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
             System.out.println("[ConvergenceRecorder] No data to visualize.");
             return;
         }
-        SwingUtilities.invokeLater(() -> {
-            JFreeChart chart = createChart(title, merged);
-            showChartFrame(title, chart);
-        });
-    }
-
-    private void showChartFrame(String title, JFreeChart chart) {
+        JFreeChart chart = buildChart(title, merged);
+        ChartPanel panel = new ChartPanel(chart);
+        panel.setMouseZoomable(false);
+        panel.setMouseWheelEnabled(false);
+        addChartInteraction(panel, chart);
         JFrame frame = new JFrame(title);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setPreferredSize(new Dimension(800, 600));
-        chartPanel.setMouseWheelEnabled(true);
-        chartPanel.setDomainZoomable(true);
-        chartPanel.setRangeZoomable(true);
-        frame.add(chartPanel, BorderLayout.CENTER);
-        frame.pack();
+        frame.setContentPane(panel);
+        frame.setSize(900, 650);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+    }
+
+    private void addChartInteraction(ChartPanel panel, JFreeChart chart) {
+        final java.awt.Point[] dragStart = { null };
+        final java.awt.Point[] zoomStart = { null };
+        final java.awt.Rectangle[] zoomRect = { null };
+
+        panel.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                if (e.getButton() == java.awt.event.MouseEvent.BUTTON1) {
+                    dragStart[0] = e.getPoint();
+                } else if (e.getButton() == java.awt.event.MouseEvent.BUTTON3) {
+                    zoomStart[0] = e.getPoint();
+                    zoomRect[0] = new java.awt.Rectangle();
+                }
+            }
+
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                if (e.getButton() == java.awt.event.MouseEvent.BUTTON3 && zoomRect[0] != null) {
+                    java.awt.Rectangle r = zoomRect[0];
+                    if (r.width > 5 && r.height > 5) {
+                        panel.zoom(new java.awt.geom.Rectangle2D.Double(
+                            r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight()));
+                    }
+                    zoomRect[0] = null;
+                    chart.getXYPlot().clearAnnotations();
+                }
+                dragStart[0] = null;
+            }
+        });
+
+        panel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(java.awt.event.MouseEvent e) {
+                XYPlot plot = chart.getXYPlot();
+                if (dragStart[0] != null) {
+                    int dx = e.getX() - dragStart[0].x;
+                    int dy = e.getY() - dragStart[0].y;
+                    dragStart[0] = e.getPoint();
+
+                    java.awt.geom.Rectangle2D dataArea = panel.getChartRenderingInfo().getPlotInfo().getDataArea();
+                    double xRange = plot.getDomainAxis().getUpperBound() - plot.getDomainAxis().getLowerBound();
+                    double yRange = plot.getRangeAxis().getUpperBound() - plot.getRangeAxis().getLowerBound();
+                    double dxData = -dx / dataArea.getWidth() * xRange;
+                    double dyData = dy / dataArea.getHeight() * yRange;
+
+                    plot.getDomainAxis().setRange(
+                        plot.getDomainAxis().getLowerBound() + dxData,
+                        plot.getDomainAxis().getUpperBound() + dxData);
+                    plot.getRangeAxis().setRange(
+                        plot.getRangeAxis().getLowerBound() + dyData,
+                        plot.getRangeAxis().getUpperBound() + dyData);
+                } else if (zoomStart[0] != null) {
+                    int x = Math.min(zoomStart[0].x, e.getX());
+                    int y = Math.min(zoomStart[0].y, e.getY());
+                    int w = Math.abs(e.getX() - zoomStart[0].x);
+                    int h = Math.abs(e.getY() - zoomStart[0].y);
+                    zoomRect[0] = new java.awt.Rectangle(x, y, w, h);
+                    panel.repaint();
+                }
+            }
+        });
+
+        panel.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent e) {
+                XYPlot plot = chart.getXYPlot();
+                java.awt.geom.Rectangle2D dataArea = panel.getChartRenderingInfo().getPlotInfo().getDataArea();
+                double factor = (e.getWheelRotation() < 0) ? 0.8 : 1.25;
+                double x = e.getX();
+                double y = e.getY();
+                double cx = plot.getDomainAxis().java2DToValue(x, dataArea, plot.getDomainAxisEdge());
+                double cy = plot.getRangeAxis().java2DToValue(y, dataArea, plot.getRangeAxisEdge());
+                double xLo = cx - (cx - plot.getDomainAxis().getLowerBound()) * factor;
+                double xHi = cx + (plot.getDomainAxis().getUpperBound() - cx) * factor;
+                double yLo = cy - (cy - plot.getRangeAxis().getLowerBound()) * factor;
+                double yHi = cy + (plot.getRangeAxis().getUpperBound() - cy) * factor;
+                plot.getDomainAxis().setRange(xLo, xHi);
+                plot.getRangeAxis().setRange(yLo, yHi);
+            }
+        });
     }
 
     public void saveChart(String filePath) {
@@ -289,24 +368,75 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
             System.out.println("[ConvergenceRecorder] No data to save.");
             return;
         }
-        JFreeChart chart = createChart(title, merged);
+        JFreeChart chart = buildChart(title, merged);
         try {
             File outputFile = new File(filePath);
             String ext = filePath.substring(filePath.lastIndexOf(".") + 1).toLowerCase();
-            int width = 800;
-            int height = 600;
+            String format = "png";
             if (ext.equals("jpg") || ext.equals("jpeg")) {
-                ChartUtils.saveChartAsJPEG(outputFile, chart, width, height);
+                format = "jpg";
+            } else if (!ext.equals("png")) {
+                outputFile = new File(filePath + ".png");
+            }
+            if (format.equals("jpg")) {
+                ChartUtils.saveChartAsJPEG(outputFile, chart, 800, 600);
             } else {
-                if (!ext.equals("png")) {
-                    outputFile = new File(filePath + ".png");
-                }
-                ChartUtils.saveChartAsPNG(outputFile, chart, width, height);
+                ChartUtils.saveChartAsPNG(outputFile, chart, 800, 600);
             }
             System.out.println("[ConvergenceRecorder] Chart saved to: " + outputFile.getAbsolutePath());
         } catch (IOException e) {
             System.err.println("[ConvergenceRecorder] Failed to save chart: " + e.getMessage());
         }
+    }
+
+    private JFreeChart buildChart(String title, Map<String, RunData> merged) {
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        List<String> names = new ArrayList<>(merged.keySet());
+
+        for (int s = 0; s < names.size(); s++) {
+            RunData data = merged.get(names.get(s));
+            XYSeries series = new XYSeries(names.get(s), false, true);
+            for (int i = 0; i < data.iterations.size(); i++) {
+                double val = data.values.get(i);
+                if (!Double.isNaN(val) && !Double.isInfinite(val)) {
+                    series.add(data.iterations.get(i).doubleValue(), val, false);
+                }
+            }
+            dataset.addSeries(series);
+        }
+
+        JFreeChart chart = ChartFactory.createXYLineChart(
+            title, "Iteration", "Objective Value", dataset,
+            PlotOrientation.VERTICAL, true, true, false);
+
+        chart.setBackgroundPaint(Color.WHITE);
+        XYPlot plot = chart.getXYPlot();
+        plot.setBackgroundPaint(Color.WHITE);
+        plot.setDomainGridlinesVisible(true);
+        plot.setRangeGridlinesVisible(true);
+        plot.setAxisOffset(new RectangleInsets(5, 5, 5, 5));
+
+        ((NumberAxis) plot.getDomainAxis()).setAutoRangeIncludesZero(false);
+        ((NumberAxis) plot.getRangeAxis()).setAutoRangeIncludesZero(false);
+
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+
+        for (int s = 0; s < names.size(); s++) {
+            Color color = CURVE_COLORS[s % CURVE_COLORS.length];
+            int n = merged.get(names.get(s)).values.size();
+
+            renderer.setSeriesPaint(s, color);
+            renderer.setSeriesStroke(s, new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            renderer.setSeriesLinesVisible(s, true);
+            renderer.setSeriesShapesVisible(s, true);
+            renderer.setSeriesToolTipGenerator(s,
+                new StandardXYToolTipGenerator("{0}<br>Iter={1}, Value={2}",
+                    NumberFormat.getIntegerInstance(),
+                    NumberFormat.getNumberInstance()));
+        }
+
+        plot.setRenderer(renderer);
+        return chart;
     }
 
     private Map<String, RunData> buildMergedRunMap() {
@@ -320,7 +450,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         }
         return merged;
     }
-
     private String makeUniqueNameForMerged(Map<String, RunData> merged, String baseName) {
         if (!merged.containsKey(baseName)) {
             return baseName;
@@ -334,64 +463,4 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         return candidate;
     }
 
-    private JFreeChart createChart(String title, Map<String, RunData> merged) {
-        XYSeriesCollection dataset = new XYSeriesCollection();
-        List<String> names = new ArrayList<>(merged.keySet());
-
-        for (String name : names) {
-            RunData data = merged.get(name);
-            String seriesName = name + " (" + data.values.size() + " pts, interval=" + data.interval + ")";
-            XYSeries series = new XYSeries(seriesName, false);
-            for (int i = 0; i < data.iterations.size(); i++) {
-                double val = data.values.get(i);
-                if (!Double.isNaN(val) && !Double.isInfinite(val)) {
-                    series.add(data.iterations.get(i).doubleValue(), val);
-                }
-            }
-            dataset.addSeries(series);
-        }
-
-        JFreeChart chart = ChartFactory.createXYLineChart(
-            title,
-            "Iteration",
-            "Objective Value",
-            dataset,
-            PlotOrientation.VERTICAL,
-            true,
-            true,
-            false
-        );
-
-        XYPlot plot = chart.getXYPlot();
-        plot.setBackgroundPaint(Color.WHITE);
-        plot.setDomainGridlinePaint(new Color(220, 220, 220));
-        plot.setRangeGridlinePaint(new Color(220, 220, 220));
-        plot.setAxisOffset(new RectangleInsets(4, 4, 4, 4));
-        plot.setOutlineVisible(false);
-
-        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-        renderer.setDefaultLinesVisible(true);
-        renderer.setDefaultShapesVisible(true);
-
-        for (int i = 0; i < dataset.getSeriesCount(); i++) {
-            Color color = CURVE_COLORS[i % CURVE_COLORS.length];
-            renderer.setSeriesPaint(i, color);
-            renderer.setSeriesStroke(i, new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            renderer.setSeriesShapesVisible(i, dataset.getSeries(i).getItemCount() <= 200);
-        }
-
-        plot.setRenderer(renderer);
-
-        NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
-        domainAxis.setAutoRangeIncludesZero(false);
-        domainAxis.setLowerMargin(0.02);
-        domainAxis.setUpperMargin(0.02);
-
-        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setAutoRangeIncludesZero(false);
-        rangeAxis.setLowerMargin(0.05);
-        rangeAxis.setUpperMargin(0.05);
-
-        return chart;
-    }
 }

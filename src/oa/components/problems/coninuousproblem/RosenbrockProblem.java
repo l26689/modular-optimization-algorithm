@@ -7,7 +7,7 @@ public final class RosenbrockProblem extends ContinuousProblem {
 
     public RosenbrockProblem(int dimension) {
         // 标准边界：[-2.048, 2.048]
-        super(createBounds(dimension, -2.048), createBounds(dimension, 2.048));
+        super(createBounds(dimension, -30), createBounds(dimension, 30));
     }
 
     @Override

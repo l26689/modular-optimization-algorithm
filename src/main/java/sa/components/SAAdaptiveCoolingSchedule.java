@@ -1,9 +1,10 @@
 package sa.components;
 
+import java.util.Random;
+
+import oa.api.problem.Problem;
 import sa.core.SACoolingSchedule;
 import sa.core.SAState;
-import java.util.Random;
-import oa.api.problem.Problem;
 
 /**
  * 自适应智能冷却策略，根据搜索过程中的解接受率动态调整降温速度与方向。

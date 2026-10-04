@@ -1,5 +1,4 @@
 package oa.components.recoders;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.io.File;
@@ -10,14 +9,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.LogAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.plot.PlotOrientation;
@@ -32,24 +30,17 @@ import oa.api.problem.Evaluable;
 import oa.api.problem.Problem;
 import oa.api.spi.Reusable;
 import oa.api.spi.component.Recorder;
-public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> implements Recorder<X, Prob, State<X>>, Reusable {
-
+public class ConvergenceRecorder<X, Prob extends Problem<X> & Evaluable<X, ?>> implements Recorder<X, Prob, State<X>>, Reusable {
     private Prob prob;
-
     private String currentRunName;
     private int recordInterval;
-
     private X bestX;
     private int callCount;
-
     private final List<Double> currentConvergenceValues;
     private final List<Integer> currentIterations;
-
     private final Map<String, RunData> runHistory;
-
     private static final String DEFAULT_RUN_NAME = "run";
     private static final int DEFAULT_INTERVAL = 1;
-
     private static final Color[] CURVE_COLORS = {
         new Color(31, 119, 180),
         new Color(255, 127, 14),
@@ -62,12 +53,10 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         new Color(188, 189, 34),
         new Color(23, 190, 207),
     };
-
     private static class RunData {
         final int interval;
         final List<Integer> iterations;
         final List<Double> values;
-
         RunData(int interval) {
             this.interval = interval;
             this.iterations = new ArrayList<>();
@@ -77,7 +66,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
     public ConvergenceRecorder() {
         this(DEFAULT_RUN_NAME, DEFAULT_INTERVAL);
     }
-
     public ConvergenceRecorder(String runName, int recordInterval) {
         if (recordInterval <= 0) {
             throw new IllegalArgumentException("The record interval must be a positive integer.");
@@ -88,19 +76,16 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         this.currentIterations = new ArrayList<>();
         this.runHistory = new LinkedHashMap<>();
     }
-
     @Override
     public void init(Prob prob, Random random) {
         this.prob = prob;
     }
-
     @Override
     public void record(State<X> state) {
         X[] currentXs = state.getCurrentXs();
         if (currentXs == null || currentXs.length == 0) {
             return;
         }
-
         X localBest = null;
         for (X x : currentXs) {
             if (x == null) {
@@ -110,22 +95,18 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
                 localBest = x;
             }
         }
-
         if (localBest != null) {
             if (bestX == null || prob.compare(localBest, bestX) > 0) {
                 bestX = prob.copyX(localBest);
             }
         }
-
         if (callCount % recordInterval == 0 && localBest != null) {
             double objectiveValue = computeObjectiveValue(localBest);
             currentConvergenceValues.add(objectiveValue);
             currentIterations.add(callCount);
         }
-
         callCount++;
     }
-
     private double computeObjectiveValue(X x) {
         if (prob != null) {
             Object result = prob.evaluate(x);
@@ -135,7 +116,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         }
         return callCount;
     }
-
     @Override
     public void reset() {
         archiveCurrentRun();
@@ -144,7 +124,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         this.currentConvergenceValues.clear();
         this.currentIterations.clear();
     }
-
     public void reset(String runName, int recordInterval) {
         if (recordInterval <= 0) {
             throw new IllegalArgumentException("The record interval must be a positive integer.");
@@ -157,7 +136,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         this.currentConvergenceValues.clear();
         this.currentIterations.clear();
     }
-
     private void archiveCurrentRun() {
         if (bestX == null && currentConvergenceValues.isEmpty()) {
             return;
@@ -168,7 +146,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         data.values.addAll(currentConvergenceValues);
         runHistory.put(uniqueName, data);
     }
-
     private String makeUniqueName(String baseName) {
         if (!runHistory.containsKey(baseName)) {
             return baseName;
@@ -181,7 +158,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         } while (runHistory.containsKey(candidate));
         return candidate;
     }
-
     public List<Double> getConvergenceData(String runName) {
         RunData data = runHistory.get(runName);
         if (data != null) {
@@ -189,7 +165,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         }
         return new ArrayList<>();
     }
-
     public List<Integer> getIterationData(String runName) {
         RunData data = runHistory.get(runName);
         if (data != null) {
@@ -197,14 +172,12 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         }
         return new ArrayList<>();
     }
-
     public X getBestX() {
         if (bestX == null) {
             return null;
         }
         return prob.copyX(bestX);
     }
-
     public double getBestValue() {
         if (bestX == null) {
             return Double.NaN;
@@ -214,15 +187,12 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
     public int getCallCount() {
         return callCount;
     }
-
     public String getCurrentRunName() {
         return currentRunName;
     }
-
     public int getRecordInterval() {
         return recordInterval;
     }
-
     public List<String> getRunNames() {
         List<String> names = new ArrayList<>(runHistory.keySet());
         if (bestX != null && !currentConvergenceValues.isEmpty()) {
@@ -231,7 +201,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         }
         return names;
     }
-
     public void printConvergenceData() {
         Map<String, RunData> merged = buildMergedRunMap();
         if (merged.isEmpty()) {
@@ -251,11 +220,9 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
                 entry.getKey(), data.values.size(), first, last, best);
         }
     }
-
     public void visualize() {
         visualize("Convergence Curves");
     }
-
     public void visualize(String title) {
         Map<String, RunData> merged = buildMergedRunMap();
         if (merged.isEmpty()) {
@@ -274,12 +241,10 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
-
     private void addChartInteraction(ChartPanel panel, JFreeChart chart) {
         final java.awt.Point[] dragStart = { null };
         final java.awt.Point[] zoomStart = { null };
         final java.awt.Rectangle[] zoomRect = { null };
-
         panel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent e) {
@@ -290,7 +255,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
                     zoomRect[0] = new java.awt.Rectangle();
                 }
             }
-
             @Override
             public void mouseReleased(java.awt.event.MouseEvent e) {
                 if (e.getButton() == java.awt.event.MouseEvent.BUTTON3 && zoomRect[0] != null) {
@@ -305,7 +269,6 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
                 dragStart[0] = null;
             }
         });
-
         panel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             @Override
             public void mouseDragged(java.awt.event.MouseEvent e) {
@@ -314,19 +277,34 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
                     int dx = e.getX() - dragStart[0].x;
                     int dy = e.getY() - dragStart[0].y;
                     dragStart[0] = e.getPoint();
-
                     java.awt.geom.Rectangle2D dataArea = panel.getChartRenderingInfo().getPlotInfo().getDataArea();
-                    double xRange = plot.getDomainAxis().getUpperBound() - plot.getDomainAxis().getLowerBound();
-                    double yRange = plot.getRangeAxis().getUpperBound() - plot.getRangeAxis().getLowerBound();
-                    double dxData = -dx / dataArea.getWidth() * xRange;
-                    double dyData = dy / dataArea.getHeight() * yRange;
+                    double dw = dataArea.getWidth();
+                    double dh = dataArea.getHeight();
+                    if (dw <= 0 || dh <= 0) return;
 
-                    plot.getDomainAxis().setRange(
-                        plot.getDomainAxis().getLowerBound() + dxData,
-                        plot.getDomainAxis().getUpperBound() + dxData);
-                    plot.getRangeAxis().setRange(
-                        plot.getRangeAxis().getLowerBound() + dyData,
-                        plot.getRangeAxis().getUpperBound() + dyData);
+                    double xLo = plot.getDomainAxis().getLowerBound();
+                    double xHi = plot.getDomainAxis().getUpperBound();
+                    double xRange = xHi - xLo;
+                    double dxFrac = -dx / dw;
+                    double newXLo = xLo + dxFrac * xRange;
+                    double newXHi = xHi + dxFrac * xRange;
+
+                    double yLo = plot.getRangeAxis().getLowerBound();
+                    double yHi = plot.getRangeAxis().getUpperBound();
+                    double safeYLo = Math.max(yLo, 1.0E-100);
+                    double safeYHi = Math.max(yHi, 1.0E-100);
+                    double logLo = Math.log10(safeYLo);
+                    double logHi = Math.log10(safeYHi);
+                    double logRange = logHi - logLo;
+                    double dyFrac = dy / dh;
+                    double logShift = dyFrac * logRange;
+                    double newLogLo = logLo + logShift;
+                    double newLogHi = logHi + logShift;
+                    double newYLo = Math.pow(10, newLogLo);
+                    double newYHi = Math.pow(10, newLogHi);
+
+                    plot.getDomainAxis().setRange(newXLo, newXHi);
+                    plot.getRangeAxis().setRange(newYLo, newYHi);
                 } else if (zoomStart[0] != null) {
                     int x = Math.min(zoomStart[0].x, e.getX());
                     int y = Math.min(zoomStart[0].y, e.getY());
@@ -337,31 +315,46 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
                 }
             }
         });
-
         panel.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
             @Override
             public void mouseWheelMoved(java.awt.event.MouseWheelEvent e) {
                 XYPlot plot = chart.getXYPlot();
                 java.awt.geom.Rectangle2D dataArea = panel.getChartRenderingInfo().getPlotInfo().getDataArea();
+                double dw = dataArea.getWidth();
+                double dh = dataArea.getHeight();
+                if (dw <= 0 || dh <= 0) return;
+
                 double factor = (e.getWheelRotation() < 0) ? 0.8 : 1.25;
-                double x = e.getX();
-                double y = e.getY();
-                double cx = plot.getDomainAxis().java2DToValue(x, dataArea, plot.getDomainAxisEdge());
-                double cy = plot.getRangeAxis().java2DToValue(y, dataArea, plot.getRangeAxisEdge());
+                double mx = e.getX();
+                double my = e.getY();
+
+                double cx = plot.getDomainAxis().java2DToValue(mx, dataArea, plot.getDomainAxisEdge());
                 double xLo = cx - (cx - plot.getDomainAxis().getLowerBound()) * factor;
                 double xHi = cx + (plot.getDomainAxis().getUpperBound() - cx) * factor;
-                double yLo = cy - (cy - plot.getRangeAxis().getLowerBound()) * factor;
-                double yHi = cy + (plot.getRangeAxis().getUpperBound() - cy) * factor;
                 plot.getDomainAxis().setRange(xLo, xHi);
-                plot.getRangeAxis().setRange(yLo, yHi);
+
+                double yLoBound = plot.getRangeAxis().getLowerBound();
+                double yHiBound = plot.getRangeAxis().getUpperBound();
+                double safeYLo = Math.max(yLoBound, 1.0E-100);
+                double safeYHi = Math.max(yHiBound, 1.0E-100);
+                double logLo = Math.log10(safeYLo);
+                double logHi = Math.log10(safeYHi);
+
+                double cy = plot.getRangeAxis().java2DToValue(my, dataArea, plot.getRangeAxisEdge());
+                double safeCy = Math.max(cy, 1.0E-100);
+                double logCy = Math.log10(safeCy);
+
+                double newLogLo = logCy - (logCy - logLo) * factor;
+                double newLogHi = logCy + (logHi - logCy) * factor;
+                double newYLo = Math.pow(10, newLogLo);
+                double newYHi = Math.pow(10, newLogHi);
+                plot.getRangeAxis().setRange(newYLo, newYHi);
             }
         });
     }
-
     public void saveChart(String filePath) {
         saveChart(filePath, "Convergence Curves");
     }
-
     public void saveChart(String filePath, String title) {
         Map<String, RunData> merged = buildMergedRunMap();
         if (merged.isEmpty()) {
@@ -388,43 +381,36 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
             System.err.println("[ConvergenceRecorder] Failed to save chart: " + e.getMessage());
         }
     }
-
     private JFreeChart buildChart(String title, Map<String, RunData> merged) {
         XYSeriesCollection dataset = new XYSeriesCollection();
         List<String> names = new ArrayList<>(merged.keySet());
-
         for (int s = 0; s < names.size(); s++) {
             RunData data = merged.get(names.get(s));
             XYSeries series = new XYSeries(names.get(s), false, true);
             for (int i = 0; i < data.iterations.size(); i++) {
                 double val = data.values.get(i);
                 if (!Double.isNaN(val) && !Double.isInfinite(val)) {
-                    series.add(data.iterations.get(i).doubleValue(), val, false);
+                    series.add(data.iterations.get(i).doubleValue(), Math.max(val, 1.0E-15), false);
                 }
             }
             dataset.addSeries(series);
         }
-
         JFreeChart chart = ChartFactory.createXYLineChart(
             title, "Iteration", "Objective Value", dataset,
             PlotOrientation.VERTICAL, true, true, false);
-
         chart.setBackgroundPaint(Color.WHITE);
         XYPlot plot = chart.getXYPlot();
         plot.setBackgroundPaint(Color.WHITE);
         plot.setDomainGridlinesVisible(true);
         plot.setRangeGridlinesVisible(true);
         plot.setAxisOffset(new RectangleInsets(5, 5, 5, 5));
-
         ((NumberAxis) plot.getDomainAxis()).setAutoRangeIncludesZero(false);
-        ((NumberAxis) plot.getRangeAxis()).setAutoRangeIncludesZero(false);
-
+        LogAxis logAxis = new LogAxis("Objective Value (log)");
+        plot.setRangeAxis(logAxis);
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-
         for (int s = 0; s < names.size(); s++) {
             Color color = CURVE_COLORS[s % CURVE_COLORS.length];
             int n = merged.get(names.get(s)).values.size();
-
             renderer.setSeriesPaint(s, color);
             renderer.setSeriesStroke(s, new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             renderer.setSeriesLinesVisible(s, true);
@@ -434,11 +420,9 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
                     NumberFormat.getIntegerInstance(),
                     NumberFormat.getNumberInstance()));
         }
-
         plot.setRenderer(renderer);
         return chart;
     }
-
     private Map<String, RunData> buildMergedRunMap() {
         Map<String, RunData> merged = new LinkedHashMap<>(runHistory);
         if (bestX != null && !currentConvergenceValues.isEmpty()) {
@@ -462,5 +446,4 @@ public class ConvergenceRecorder<X,Prob extends Problem<X> & Evaluable<X, ?>> im
         } while (merged.containsKey(candidate));
         return candidate;
     }
-
 }

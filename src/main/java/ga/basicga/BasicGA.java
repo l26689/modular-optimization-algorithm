@@ -1,12 +1,11 @@
 package ga.basicga;
 
-import oa.api.problem.Problem;
-
 import java.lang.reflect.Array;
 import java.util.Random;
 
 import ga.core.*;
 import oa.api.optimizationalgorithm.*;
+import oa.api.problem.Problem;
 import oa.api.spi.component.*;
 
 public final class BasicGA<X,Prob extends Problem<X>> 
@@ -51,6 +50,7 @@ public final class BasicGA<X,Prob extends Problem<X>>
         terminationCondition.init(problem, random);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void solve(Recorder<X, ? super Prob, ? super BasicGAState<X>> recorder) {
         recorder.init(problem, random);

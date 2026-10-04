@@ -70,7 +70,7 @@ import pso.core.Particle;
  * @see pso.components.continuousproblem.StandardPSOParticle
  */
 public final class ParticleSwarmOptimization<X,Prob extends Problem<X>> extends OptimizationAlgorithm<X,Prob,BasicPSOState<X>> {
-    private Particle<X,? super Prob,BasicPSOState<X>>[] particles;
+    private Particle<X,? super Prob,? super BasicPSOState<X>>[] particles;
     private TerminationCondition<X,? super Prob,? super BasicPSOState<X>> terminationCondition;
 
     private Random random;
@@ -121,7 +121,7 @@ public final class ParticleSwarmOptimization<X,Prob extends Problem<X>> extends 
     public ParticleSwarmOptimization(
         Random random,
         Prob problem,
-        Particle<X,? super Prob,BasicPSOState<X>>[] particles,
+        Particle<X,? super Prob,? super BasicPSOState<X>>[] particles,
         TerminationCondition<X,? super Prob,? super BasicPSOState<X>> terminationCondition) {
         if(particles.length == 0) {
             throw new IllegalArgumentException("particles.length must be greater than 0");
@@ -130,7 +130,7 @@ public final class ParticleSwarmOptimization<X,Prob extends Problem<X>> extends 
         this.problem = problem;
         this.particles = particles;
         this.terminationCondition = terminationCondition;
-        for (Particle<X,? super Prob,BasicPSOState<X>> particle : particles) {
+        for (Particle<X,? super Prob,? super BasicPSOState<X>> particle : particles) {
             particle.init(problem,random);
         }
         terminationCondition.init(problem,random);

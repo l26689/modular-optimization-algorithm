@@ -1,10 +1,10 @@
 package sa.components;
 
-import sa.core.SACoolingSchedule;
-import sa.core.SAState;
 import java.util.Random;
 
 import oa.api.problem.Problem;
+import sa.core.SACoolingSchedule;
+import sa.core.SAState;
 
 public final class SABasicCoolingSchedule<X> implements SACoolingSchedule<X,Problem<X>,SAState<X>> {
     private double coolingRate;

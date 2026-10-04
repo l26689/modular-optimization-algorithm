@@ -1,10 +1,10 @@
 package oa.api.spi.component;
 
+import java.util.Random;
+
 import oa.api.optimizationalgorithm.State;
 import oa.api.problem.Problem;
 import oa.api.spi.Reusable;
-
-import java.util.Random;
 /**
  * 优化算法组件的统一接口，定义了所有算法组件应遵循的基本契约。
  * <p>

@@ -4,7 +4,6 @@ import java.util.Random;
 
 import oa.components.problems.coninuousproblem.ContinuousProblem;
 import sa.core.SAInitializer;
-import sa.core.SAState;
 
 /**
  * 网格启发式初始化器：把 16 个点放在 4×4 等距网格上，并叠加小幅度随机抖动。

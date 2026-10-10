@@ -1,246 +1,151 @@
 # Modular Optimization Algorithm (MOA)
 
-[![Java](https://img.shields.io/badge/Java-17+-blue.svg)](https://www.java.com)
+[![Java](https://img.shields.io/badge/Java-25+-blue.svg)](https://www.java.com)
 
-一个尝试统一抽象优化算法的模块化优化算法框架。  
-将算法拆解为清晰的可替换组件，像乐高一样自由组合。
+一个模块化优化算法框架。将算法拆解为清晰的可替换组件，像乐高一样自由组合。
 
-## ✨ 设计思想
+面向学习、实验和定制化：每一块组件都拥有清晰的接口契约，可以独立阅读、测试和替换。
 
-### 为什么还要造轮子？
+---
 
-现有实现要么是工业级黑盒（如 Optuna），要么是高度耦合的教学代码。  
-**MOA** 面向学习、实验和定制化：每一块组件都拥有清晰的接口契约，可以独立阅读、测试和替换。
-
-### 核心原则：最少信息
-
-组件的接口**只传递它绝对无法自行推导的信息**。
-
-| 不传递 | 原因 |
-|--------|------|
-| 目标函数值 `Y` | `evaluate()` 已从 `Problem` 移除，组件应通过 `compare()` 比较解 |
-| 是否改进 | 组件可通过 `Problem.compare()` 自行比较 |
-| 迭代次数 | 组件内部维护计数器，通过方法调用次数推导 |
-
-**只传递原子事实**：
-1. `temperature` – 只有主循环知道
-2. `currentX` – 当前解（组件无法感知外部状态）
-3. `isAccepted` – 上一次概率接受的结果（只有主循环拥有随机数）
-
-### 架构概览
+## 架构概览
 
 ```
-MOA/
-├── oa.api/                         # 通用优化算法抽象
-│   ├── oa.api.problem/             # 问题定义
-│   │   ├── Problem                 # 问题接口（copyX + compare）
-│   │   └── Evaluable               # 可评估接口（evaluate）
-│   ├── oa.api.optimizationalgorithm/  # 算法框架
-│   │   ├── OptimizationAlgorithm   # 算法基类
-│   │   └── State                   # 状态接口
-│   └── oa.api.spi/                 # 组件服务接口（SPI）
-│       ├── Component               # 统一组件基接口（init）
-│       ├── Initializer             # 初始化器接口
-│       ├── SearchOperator          # 搜索算子接口
-│       ├── TerminationCondition    # 终止条件接口
-│       ├── Recorder                # 记录器接口（extends Component）
-│       └── Reusable                # 可复用契约
-├── sa.core/                   # 模拟退火核心
-│   ├── SimulatedAnnealing     # 主循环控制器
-│   ├── SAState                # SA 迭代状态
-│   ├── SAInitializer          # SA 初始化器接口（extends Initializer）
-│   ├── SAPerturbation         # SA 扰动器接口（extends SearchOperator）
-│   ├── SACoolingSchedule      # SA 冷却策略接口（extends Component）
-│   └── SATerminationCondition # SA 终止条件接口（extends TerminationCondition）
-├── sa.components/             # SA 内置实现
-├── oa.components/             # 通用组件（Recorder、TerminationCondition 等）
-└── oa.examples/               # 示例问题
+src/main/java/moa/
+├── framework/      抽象层 —— 接口与抽象类，通用
+│   ├── api/        SPI 组件契约（Component, Initializer, Recorder, ...）
+│   ├── engine/     算法运行时抽象（OptimizationAlgorithm, State）
+│   └── problem/    问题域定义（Problem, Evaluable）
+│
+├── components/     无约束的通用实现
+│
+├── problem/        问题定义 + 问题约束组件
+│
+├── algorithm/      算法模块
+│   ├── sa/  api / components / engine
+│   ├── pso/ api / components / engine
+│   ├── ga/  api / components / engine
+│   └── ……
+│
+├── example/        演示用法
+└── benchmark/      实验脚本
 ```
 
-## 🚀 快速开始
 
-详见 [QUICKSTART.md](QUICKSTART.md)，5 分钟内运行你的第一个优化示例。
+> 完整设计说明见 [docs/DESIGN.md](docs/DESIGN.md)。
 
-## 🧩 核心概念
+---
 
-### Problem — 问题定义
+## 快速开始
 
-实现 `Problem<X>` 接口，定义解的表示类型 `X`：
+```bash
+git clone https://github.com/l26689/modular-optimization-algorithm.git
+cd modular-optimization-algorithm
+mvn compile
+```
+
+运行 Sphere 示例：
+
+```bash
+mvn exec:java -Dexec.mainClass="moa.example.SphereProblemDemo"
+```
+
+或运行 Rosenbrock 示例：
+
+```bash
+mvn exec:java -Dexec.mainClass="moa.example.RosenbrockDemo"
+```
+
+---
+
+## 核心设计
+
+### 泛型约束
+
+用泛型在编译期表达兼容性依赖，接口签名即约束声明：
 
 ```java
-public interface Problem<X> {
-    X copyX(X x);              // 深拷贝解
-    double compare(X x1, X x2); // 比较两个解的优劣（内部封装评估逻辑）
-}
+Component<X, Prob extends Problem<X>, S extends State<X>>
 ```
 
-框架核心只依赖 `compare()`，无需知道目标值的具体类型。如需向用户展示目标函数值，额外实现 `Evaluable<X, Y>` 接口（提供 `evaluate()` 方法）。
+三个参数分别约束解的表示、问题类型、状态类型（适配算法）。算法模块可进一步收窄。
 
-```java
-public interface Evaluable<X, Y> {
-    Y evaluate(X x);  // 评估解的质量（必须是纯函数）
-}
-```
+### SPI 接口
 
-`compare()` 方法定义**偏序关系**：
-- **正值**（`> 0`）—— `x1` 优于 `x2`
-- **负值**（`< 0`）—— `x1` 劣于 `x2`
-- **零**（`= 0`）—— 两者等优 **或** 无法比较（无支配关系）
+| 接口 | 职责 |
+|---|---|
+| Component | 基契约：init(Prob, Random) 绑定上下文 |
+| Initializer | initializeX() 生成初始解 |
+| SearchOperator | search(State) 执行状态转移 |
+| Recorder | record(State) 记录优化过程 |
+| TerminationCondition | check() 判定停止 |
+| Reusable | reset() 回到可用状态 |
 
-绝对值表示优劣差距的大小，使 Metropolis 准则能动态调整接受概率。
+所有算法（SA、PSO、GA、DE）都是对上述接口的不同装配方式。
 
-### Recorder — 结果记录与评估（`oa.api.spi`）
+### 组件生命周期
 
-`solve()` 方法返回 `void`，优化结果通过 `Recorder` 对外提供。`Recorder` 继承自 `Component`，
-遵循与其他组件相同的生命周期（构造 → `init(problem, random)` → 使用），
-`init()` 由算法在 `solve()` 入口统一调用，Recorder 无需在构造时获取 Problem 引用。
+构造(纯参数) -> init(Prob, Random) -> 业务方法(反复调用) -> reset()
 
-```java
-public interface Recorder<X, Prob extends Problem<X>, S extends State<X>> extends Component<X, Prob, S> {
-    void init(Prob problem, Random random);  // 绑定问题实例
-    void record(S state);                     // 在适当时机被算法调用
-}
-```
+### 可复现性
 
-`solve()` 的 Recorder 参数使用 `? super Prob`（下界通配符），遵循 PECS 原则，
-允许更泛化的 Recorder 被传入以具体问题类型构造的算法实例，提升组件复用性。
+单一 Random 实例贯穿引擎和所有组件，外部传入固定种子即可复现任何优化过程。
 
-内置 Recorder（均实现无参构造，无需在构造时传入 Problem）：
-- **BestRecorder** — 记录历史最优解（提供 `getBestX()`），内部通过 `compare()` 判断优劣
-- **LastRecorder** — 记录最后一次接受的解（提供 `getLastX()`）
+### State 与安全
 
-### State — 算法状态
+State.getCurrentXs() 统一以数组暴露当前解（单解算法一个元素，群体算法多个）。State 实例在迭代间复用，保存解前必须深拷贝（Problem.copyX()）。
 
-`State<X>` 接口定义了访问当前解的统一契约，通过数组模式统一暴露：
+---
 
-| 访问方式 | 方法 | 适用场景 |
-|----------|------|----------|
-| **数组模式** | `getCurrentXs()` | 统一遍历：`for (X x : state.getCurrentXs())`，SA 中数组只含一个元素，群体算法含多个 |
+## 内置组件
 
-SA 扩展为 `SAState<X>`，数组始终只包含一个元素（当前解），SA 组件可直接用 `getCurrentXs()[0]` 获取；跨算法通用组件则应使用 for-each 循环遍历。额外包含：
-- `getTemperature()` — 当前系统温度
-- `getIsAccepted()` — 上一轮是否接受新解
+### Recorder
 
-### Reusable — 可复用契约（`oa.api.spi`）
+| 类 | 说明 |
+|---|---|
+| BestRecorder | 记录历史最优解 |
+| LastRecorder | 记录最后接受的解 |
+| ConvergenceRecorder | 收敛曲线可视化（JFreeChart） |
 
-实现 `Reusable` 接口的组件支持 `reset()` 操作，可在多次独立优化运行间复用，避免反复创建实例。
+### TerminationCondition
 
-## 🧩 自定义组件
+| 类 | 说明 |
+|---|---|
+| MaxCallTerminationCondition | 基于总调用次数的终止条件 |
 
-所有组件只需实现对应的接口并实现核心方法。以下是一个线性冷却策略示例：
+---
 
-```java
-public class LinearCoolingSchedule implements SACoolingSchedule<double[], ContinuousProblem> {
-    private double coolingRate;
-    private int currentIteration;
-    private int maxIterations;
+## 内置问题
 
-    public LinearCoolingSchedule(double coolingRate, int maxIterations) {
-        this.coolingRate = coolingRate;
-        this.maxIterations = maxIterations;
-        this.currentIteration = 0;
-    }
+| 类 | 最优值 | 特点 |
+|---|---|---|
+| SphereProblem | 0 | 单峰、可分离 |
+| RosenbrockProblem | 0 | 香蕉形山谷、不可分离 |
+| RastriginProblem | 0 | 多峰、高度多模态 |
+| GriewankProblem | 0 | 多峰、边界效应 |
+| AckleyProblem | 0 | 多峰、指数衰减 |
 
-    @Override
-    public void init(ContinuousProblem problem, Random random) {
-        // 绑定问题实例（此实现无需额外操作）
-    }
+---
 
-    @Override
-    public double cool(SAState<double[]> state) {
-        double temperature = state.getTemperature();
-        currentIteration++;
-        if (currentIteration > maxIterations) {
-            currentIteration = 0;
-            return temperature * coolingRate;
-        }
-        return temperature;
-    }
-}
-```
+## 设计约束
 
-## 🎯 自定义问题
+- 冷启动：首次迭代前状态字段为默认值，组件须正确处理"无历史"情况
+- 纯函数：evaluate() 和 compare() 必须是纯函数（相同输入->相同输出）
+- 线程安全：框架默认单线程，组件内部可变状态需自行同步
+- 随机数：组件不得自建 Random，统一由引擎注入
 
-要让 MOA 优化你的问题，只需创建一个类实现 `Problem<X>` 接口（只需 `copyX()` 和 `compare()`）。如需向用户展示目标函数值，额外实现 `Evaluable<X, Y>`。为方便起见，连续优化问题可直接继承 `ContinuousProblem`（已同时实现 `Problem` 和 `Evaluable`）：
+---
 
-```java
-public class MyProblem extends ContinuousProblem {
+## 文档
 
-    public MyProblem(int dimension) {
-        super(createBounds(dimension, -100), createBounds(dimension, 100));
-    }
+| 文档 | 内容 |
+|---|---|
+| [DESIGN.md](docs/DESIGN.md) | 完整设计文档（泛型、生命周期、安全、Javadoc 规范） |
+| [QUICKSTART.md](QUICKSTART.md) | 快速上手指南 |
+| Javadoc | 各组件类的详细说明（含参数绑定和适用场景） |
 
-    @Override
-    public Double evaluate(double[] x) {
-        double sum = 0.0;
-        for (double v : x) {
-            sum += v * v;
-        }
-        return sum;
-    }
+---
 
-    @Override
-    public double[] copyX(double[] x) {
-        return x.clone();
-    }
-}
-```
+## 许可
 
-> **注**：`createBounds()` 和 `copyX()` 已在 `ContinuousProblem` 中定义，子类可直接使用。非连续问题可直接实现 `Problem<X>` 接口（只需 `copyX()` 和 `compare()`）。
-
-## ⚡ 性能建议：为评估添加缓存
-
-如果评估代价较高，建议在 Problem 实现类内部引入缓存：
-
-```java
-public class CachedMyProblem extends ContinuousProblem {
-    private double[] lastX = null;
-    private Double lastValue = null;
-
-    public CachedMyProblem(int dimension) {
-        super(createBounds(dimension, -100), createBounds(dimension, 100));
-    }
-
-    @Override
-    public Double evaluate(double[] x) {
-        if (lastX != null && java.util.Arrays.equals(x, lastX)) {
-            return lastValue;
-        }
-        double value = 0.0;
-        for (double v : x) value += v * v;
-        lastX = x.clone();
-        lastValue = value;
-        return value;
-    }
-
-    @Override
-    public double[] copyX(double[] x) {
-        return x.clone();
-    }
-}
-```
-
-## ⚠️ 设计约束
-
-**冷启动**：详见 [SAState 迭代状态封装](src/sa/README.md#sastate----迭代状态封装)。
-
-**线程安全**：框架默认单线程运行，所有组件内部可变状态需自行同步。
-
-**不可变性**：传入组件的 `currentX` 解不应被原地修改；扰动方法必须返回新对象。
-
-**纯函数**：`compare()` 内部调用的评估逻辑必须是纯函数（相同输入 -> 相同输出）。若实现了 `Evaluable`，`evaluate()` 也必须是纯函数且每次返回独立新对象。
-
-**随机数复用**：所有组件共享主算法注入的同一 `Random` 实例，不应自行创建独立的随机数生成器。
-
-## 🔮 未来演进
-
-- 离散问题适配示例（TSP、背包）
-- 粒子群优化（PSO）模块完善
-- 更多内置组件实现
-- 多目标优化支持
-
-## 📄 许可
-
-本项目采用 [MIT License](LICENSE) 许可证。
-
-欢迎 Issue 和 PR。如果你也喜欢"让代码自己说话"的风格，这个项目就是为你准备的。
+MIT License

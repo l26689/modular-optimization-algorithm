@@ -1,47 +1,39 @@
 # 快速开始
 
-本文档帮助你在 5 分钟内运行第一个模拟退火优化示例。
+5 分钟内运行你的第一个优化示例。
 
-## 📋 前置条件
+---
 
-- Java 17 或更高版本
-- 已克隆本仓库并进入项目根目录
+## 前置条件
 
-## 🔧 1. 编译项目
+- Java 25 或更高版本
+- Maven 3.6+
+- 已克隆本仓库
 
-```bash
-# 在项目根目录下执行
-javac -d bin src/oa/api/problem/*.java src/oa/api/optimizationalgorithm/*.java src/oa/api/spi/*.java src/oa/components/Recoders/*.java src/oa/components/terminationcondition/*.java src/oa/examples/continuousproblem/*.java src/oa/examples/continuousproblem/myproblem/*.java src/oa/examples/continuousproblem/rosenbrock/*.java src/sa/core/*.java src/sa/components/basiccomponents/*.java
-```
-
-## ▶️ 2. 运行示例
-
-### 示例一：简单平方和问题
+## 1. 编译
 
 ```bash
-java -cp bin oa.examples.continuousproblem.myproblem.MyProblemDemo
+mvn compile
 ```
 
-该示例在 2 维空间中最小化 `f(x) = x₁² + x₂²`，最优解为 `[0, 0]`，最优值为 `0.0`。
-
-### 示例二：Rosenbrock 函数
+## 2. 运行示例
 
 ```bash
-java -cp bin oa.examples.continuousproblem.rosenbrock.RosenbrockDemo
+# 简单平方和问题
+mvn exec:java -Dexec.mainClass="moa.example.SphereProblemDemo"
+
+# Rosenbrock 函数
+mvn exec:java -Dexec.mainClass="moa.example.RosenbrockDemo"
 ```
 
-该示例优化经典的 Rosenbrock 函数，最优解为 `[1, 1]`，最优值为 `0.0`。
+## 3. 编写自己的优化程序
 
-## ✍️ 3. 编写自己的优化程序
+### 定义问题
 
-### 步骤一：定义问题
-
-创建一个类实现 `Problem<X>` 接口（只需 `copyX()` 和 `compare()`）。如需向用户展示目标函数值，额外实现 `Evaluable<X, Y>`。为方便起见，连续优化问题可直接继承 `ContinuousProblem`（已同时实现 `Problem` 和 `Evaluable`）：
+连续优化问题直接继承 ContinuousProblem：
 
 ```java
-package mypackage;
-
-import oa.examples.continuousproblem.ContinuousProblem;
+import moa.problem.continuous.ContinuousProblem;
 
 public class MyProblem extends ContinuousProblem {
 
@@ -52,9 +44,7 @@ public class MyProblem extends ContinuousProblem {
     @Override
     public Double evaluate(double[] x) {
         double sum = 0.0;
-        for (double v : x) {
-            sum += v * v;
-        }
+        for (double v : x) sum += v * v;
         return sum;
     }
 
@@ -65,74 +55,54 @@ public class MyProblem extends ContinuousProblem {
 }
 ```
 
-> **注**：`createBounds()` 和 `copyX()` 已在 `ContinuousProblem` 中定义，子类可直接使用。非连续问题可直接实现 `Problem<X>` 接口，无需继承 `ContinuousProblem`。
+非连续问题可直接实现 `Problem<X>` 接口。
 
-### 步骤二：组装算法并运行
+### 组装算法并运行
 
 ```java
-package mypackage;
-
-import oa.components.Recoders.BestRecorder;
-import oa.components.terminationcondition.MaxCallTerminationCondition;
-import oa.examples.continuousproblem.ContinuousUniformSearch;
-import sa.core.SimulatedAnnealing;
-import sa.components.basiccomponents.*;
+import moa.algorithm.sa.engine.BasicSA;
+import moa.algorithm.sa.components.*;
+import moa.problem.continuous.components.ContinuousUniformSearch;
+import moa.components.recorder.BestRecorder;
+import moa.components.terminator.MaxCallTerminationCondition;
 
 public class MyDemo {
     public static void main(String[] args) {
-        // 1. 定义问题
         MyProblem problem = new MyProblem(2);
 
-        // 2. 组装 SA 算法
-        SimulatedAnnealing<double[]> sa =
-            new SimulatedAnnealing<>(
-                problem,
-                new SABasicInitializer(100),
-                new ContinuousUniformSearch(),
-                new SABasicCoolingSchedule(0.99, 100),
-                new MaxCallTerminationCondition<double[]>(10000)
-            );
+        BasicSA<double[], MyProblem> sa = new BasicSA<>(
+            problem,
+            new SABasicInitializer(100),
+            new ContinuousUniformSearch(),
+            new SABasicCoolingSchedule<>(0.99, 100),
+            new MaxCallTerminationCondition<double[]>(10000)
+        );
 
-        // 3. 创建记录器并启动优化
         BestRecorder<double[]> recorder = new BestRecorder<>();
         sa.solve(recorder);
 
-        // 4. 输出结果
-        System.out.println("最优解目标值: " + problem.evaluate(recorder.getBestX()));
+        System.out.println("最优值: " + problem.evaluate(recorder.getBestX()));
         System.out.println("最优解: " + java.util.Arrays.toString(recorder.getBestX()));
     }
 }
 ```
 
-### 步骤三：编译并运行
-
-```bash
-javac -d bin src/mypackage/*.java
-java -cp bin mypackage.MyDemo
-```
-
-## 🔁 4. 可复现的优化结果
-
-如果需要每次运行得到相同结果，可传入带固定种子的 `Random`：
+## 4. 固定种子的可复现运行
 
 ```java
 import java.util.Random;
-import oa.components.terminationcondition.MaxCallTerminationCondition;
 
-SimulatedAnnealing<double[]> sa =
-    new SimulatedAnnealing<>(
-        new Random(42),  // 固定种子
-        problem,
-        new SABasicInitializer(100),
-        new ContinuousUniformSearch(),
-        new SABasicCoolingSchedule(0.99, 100),
-        new MaxCallTerminationCondition<double[]>(10000)
-    );
+BasicSA<double[], MyProblem> sa = new BasicSA<>(
+    new Random(42),
+    problem,
+    new SABasicInitializer(100),
+    new ContinuousUniformSearch(),
+    new SABasicCoolingSchedule<>(0.99, 100),
+    new MaxCallTerminationCondition<double[]>(10000)
+);
 ```
 
-## 🚀 5. 下一步
+## 5. 下一步
 
-- 阅读 [README.md](README.md) 了解框架设计思想和核心概念
-- 阅读 [src/sa/README.md](src/sa/README.md) 深入了解 SA 模块
-- 阅读 [src/sa/AGENTS.md](src/sa/AGENTS.md) 了解 AI Agent 使用指南
-- 尝试自定义组件（冷却策略、扰动器等）
+- [DESIGN.md](docs/DESIGN.md) —— 完整设计文档（泛型约束、组件生命周期、安全规则）
+- Javadoc —— 各组件类的详细说明（含参数绑定和适用场景）

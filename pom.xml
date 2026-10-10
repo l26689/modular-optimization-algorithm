@@ -33,5 +33,22 @@
                 </configuration>
             </plugin>
         </plugins>
+
+        <!--
+            界面静态资源（index.html / app.js / style.css）与 Java 源码同在
+            src/main/java/meta/web/ 下，WebServer 通过 classpath 读取它们。
+            Maven 默认只复制 src/main/resources/，因此需显式声明这三类文件
+            也要复制到 target/classes，否则运行时会报「静态资源缺失」。
+        -->
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.html</include>
+                    <include>**/*.js</include>
+                    <include>**/*.css</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 </project>

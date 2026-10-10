@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOA 元优化 · 自动搜索最优算法组合</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<header>
+  <h1>自动搜索最优算法组合</h1>
+  <p class="sub">用框架自身的模拟退火，去搜索它自己的最佳配置</p>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>输入</h2>
+    <form id="form">
+      <label class="block">满意度函数模板（选一个会填入下方代码框，可自由修改）
+        <select id="template"></select>
+      </label>
+      <p class="note" id="templateNote"></p>
+
+      <label class="block">满意度函数代码（完整 Java 类，类名必须是 UserObjective）
+        <textarea id="code" rows="16" spellcheck="false"
+                  placeholder="在这里粘贴实现 meta.ObjectiveFunction 的完整 Java 类"></textarea>
+      </label>
+
+      <details>
+        <summary>满意度函数怎么写？（点开看约定）</summary>
+        <div class="contract">
+          <p>代码必须是一个完整类，<b>类名固定为 <code>UserObjective</code></b>，不要写 package：</p>
+          <pre><code>import meta.ObjectiveFunction;
+
+public class UserObjective implements ObjectiveFunction {
+    @Override
+    public double evaluate(double[] x) {
+        // 返回满意度：越大越优
+        return 0.0;
+    }
+}</code></pre>
+          <ul>
+            <li><code>evaluate(double[] x)</code> 返回<b>满意度，越大越优</b>。
+                若要最小化 f(x)，请写 <code>return -f(x);</code>。</li>
+            <li>解 <code>x</code> 的长度等于「数据维度」，各分量落在数据上、下界之间。</li>
+            <li><b>必须是纯函数</b>：相同输入必须返回相同输出。不要用
+                <code>Math.random()</code>、<code>System.currentTimeMillis()</code>
+                或可变的静态状态，否则结果没有意义。</li>
+            <li><b>必须返回有限值</b>：遇到除零、<code>log</code> 非正数、<code>sqrt</code> 负数，
+                请在函数内部改返回一个有限的大惩罚值（如 <code>-1e12</code>），
+                不要返回 <code>NaN</code> 或无穷。</li>
+            <li>可以自由添加辅助方法与静态字段，例如把数据表直接写在代码里。</li>
+          </ul>
+          <p class="note">提交时会自动编译并试跑：语法错误会指出行号，
+              返回非有限值或非纯函数也会被拦下。</p>
+        </div>
+      </details>
+
+      <div class="grid">
+        <label>数据维度
+          <input id="dim" type="number" min="1" step="1" required>
+        </label>
+        <label>数据下界
+          <input id="lower" type="number" step="any" required>
+        </label>
+        <label>数据上界
+          <input id="upper" type="number" step="any" required>
+        </label>
+        <label>计算次数预算
+          <input id="budget" type="number" min="1" step="1" value="5000" required>
+        </label>
+      </div>
+
+      <details>
+        <summary>高级设置</summary>
+        <div class="grid">
+          <label>元搜索预算（尝试多少个组合）
+            <input id="meta" type="number" min="1" step="1" value="200">
+          </label>
+          <label>每个组合重复运行次数
+            <input id="repeats" type="number" min="1" step="1" value="3">
+          </label>
+          <label>随机种子（固定则结果可复现）
+            <input id="seed" type="number" step="1" value="42">
+          </label>
+        </div>
+      </details>
+
+      <div class="actions">
+        <button id="submit" type="submit">开始搜索</button>
+        <span class="note" id="hint" style="margin:0"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel" id="statusPanel" hidden>
+    <h2>进度</h2>
+    <div class="bar"><div id="barFill"></div></div>
+    <p class="note" id="statusText" style="margin-top:10px"></p>
+    <p class="error" id="errorText" hidden></p>
+  </section>
+
+  <section class="panel" id="resultPanel" hidden>
+    <div class="solution" id="solutionBox" hidden>
+      <h3>最优配置找到的解</h3>
+      <p id="solutionText"></p>
+    </div>
+    <h2>组合排名</h2>
+    <p class="note" id="summary"></p>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>排名</th>
+            <th>平均目标值</th>
+            <th>标准差</th>
+            <th>最好目标值</th>
+            <th>平均耗时</th>
+            <th>算法组合</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="caveat">
+      <p><strong>⚠️ 结果只对当前满意度函数 + 当前预算有效。</strong>
+         换一个函数或换一档预算，最优组合可能完全不同——这是 No Free Lunch 定理的直接后果。</p>
+      <p>排名第一是从众多候选中挑出来的，存在「胜者诅咒」式的乐观偏差，
+         它很可能只是这次抽样里运气最好的那个。若要严格验证，
+         请用不同的随机种子复跑后再对比。</p>
+      <p>若两个组合的均值之差小于其标准误的 2 倍，该排名差异不可靠，请提高「重复运行次数」。</p>
+    </div>
+  </section>
+</main>
+
+<script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,177 @@
+/*
+ * MOA 元优化界面样式。
+ *
+ * 配色全部走 CSS 变量，改主题只需要动 :root 里的十几个值。
+ * 注意：改完本文件需要重新执行 bash build.sh web —— 它会把 CSS
+ * 复制到 bin/meta/web/，运行时是从那里读的。
+ */
+
+:root {
+  --fg: #1a1d21;
+  --muted: #6b7280;
+  --line: #e3e6ea;
+  --bg: #fafbfc;
+  --panel: #ffffff;
+  --accent: #2563eb;
+  --accent-fg: #ffffff;
+  --danger: #b91c1c;
+  --warn-bg: #fffbeb;
+  --warn-line: #fde68a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0 20px 60px;
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.6 -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+}
+
+/* ---- 页头 ---- */
+header { max-width: 1080px; margin: 0 auto; padding: 32px 0 8px; }
+h1 { font-size: 22px; margin: 0 0 4px; font-weight: 600; }
+.sub { margin: 0; color: var(--muted); }
+main { max-width: 1080px; margin: 0 auto; }
+
+/* ---- 面板 ---- */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 20px 22px;
+  margin-top: 18px;
+}
+h2 { font-size: 15px; margin: 0 0 14px; font-weight: 600; }
+
+/* ---- 表单 ---- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+label { display: flex; flex-direction: column; gap: 5px; font-size: 13px; color: var(--muted); }
+input, select {
+  font: inherit;
+  padding: 7px 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--fg);
+}
+input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+input:disabled { background: #f3f4f6; color: var(--muted); }
+
+details { margin-top: 14px; }
+summary { cursor: pointer; color: var(--muted); font-size: 13px; user-select: none; }
+details .grid { margin-top: 12px; }
+
+/* ---- 满意度函数代码框 ---- */
+label.block { margin-top: 14px; }
+
+textarea {
+  font: 13px/1.5 ui-monospace, Consolas, "Courier New", monospace;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--fg);
+  width: 100%;
+  min-height: 180px;
+  resize: vertical;
+  tab-size: 4;
+  white-space: pre;
+  overflow-x: auto;
+}
+textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+
+/* ---- 契约提示区 ---- */
+.contract {
+  margin-top: 8px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.contract p { margin: 0 0 8px; }
+.contract ul { margin: 0 0 8px; padding-left: 20px; }
+.contract li { margin-bottom: 5px; }
+.contract pre {
+  margin: 8px 0;
+  padding: 10px 12px;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 6px;
+  overflow-x: auto;
+  font: 12px/1.5 ui-monospace, Consolas, monospace;
+}
+.contract code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  background: #eef2f7;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+.contract pre code { background: none; padding: 0; color: inherit; font-size: 12px; }
+
+/* ---- 文字与提示 ---- */
+.note { color: var(--muted); font-size: 13px; margin: 12px 0 0; }
+.error { color: var(--danger); font-size: 13px; margin: 10px 0 0; white-space: pre-wrap; }
+
+/* ---- 按钮 ---- */
+.actions { margin-top: 18px; display: flex; align-items: center; gap: 12px; }
+button {
+  font: inherit;
+  font-weight: 500;
+  padding: 8px 20px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  cursor: pointer;
+}
+button:disabled { background: #9ca3af; cursor: not-allowed; }
+
+/* ---- 进度条 ---- */
+.bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.bar > div { height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+
+/* ---- 排名表 ---- */
+table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 500; white-space: nowrap; }
+td.num { font-family: ui-monospace, Consolas, monospace; white-space: nowrap; }
+tbody tr:hover { background: #f8fafc; }
+tbody tr:first-child td { font-weight: 600; }
+
+/* ---- 最优解展示 ---- */
+.solution {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #f0f7ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+}
+.solution h3 { font-size: 14px; margin: 0 0 8px; font-weight: 600; }
+.solution p {
+  margin: 0;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.7;
+  word-break: break-word;
+}
+
+/* ---- 风险提示框 ---- */
+.caveat {
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+  border-radius: 8px;
+  font-size: 13px;
+  color: #78350f;
+}
+.caveat p { margin: 0 0 6px; }
+.caveat p:last-child { margin-bottom: 0; }

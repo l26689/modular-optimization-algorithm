@@ -7,6 +7,20 @@ import moa.algorithm.pso.api.PSOState;
 import moa.algorithm.pso.api.Particle;
 import moa.problem.continuous.components.RandomInitializer;
 
+/**
+ * DE/current-to-best/1 变异粒子 —— 结合当前个体与最优个体的方向信息。
+ *
+ * <p>继承 RandomInitializer，实现 Particle<X:double[], Prob:ContinuousProblem, S:PSOState<double[]>>。是否为最终类：是。
+ *
+ * <p>变异公式：v = x_i + F * (x_best - x_i) + F * (x_r1 - x_r2)。在探索与利用之间取得平衡。
+ *
+ * <p><b>提示</b>
+ * <ul>
+ *   <li>约束绑定 —— X 固定为 double[]，Prob 固定为 ContinuousProblem。</li>
+ * </ul>
+ *
+ * <p><b>参见文档 2</b>
+ */
 public final class DECurrentToBest1Particle extends RandomInitializer<PSOState<double[]>> implements Particle<double[],ContinuousProblem,PSOState<double[]>> {
     private final double F;
     private final double CR;

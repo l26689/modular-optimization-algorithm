@@ -7,6 +7,20 @@ import moa.algorithm.pso.api.PSOState;
 import moa.algorithm.pso.api.Particle;
 import moa.problem.continuous.components.RandomInitializer;
 
+/**
+ * DE/rand/1 变异粒子 —— 最经典的差分进化变异策略。
+ *
+ * <p>继承 RandomInitializer，实现 Particle<X:double[], Prob:ContinuousProblem, S:PSOState<double[]>>。是否为最终类：是。
+ *
+ * <p>变异公式：v = x_r1 + F * (x_r2 - x_r3)。所有基向量均随机选取。
+ *
+ * <p><b>提示</b>
+ * <ul>
+ *   <li>约束绑定 —— X 固定为 double[]，Prob 固定为 ContinuousProblem。</li>
+ * </ul>
+ *
+ * <p><b>参见文档 2</b>
+ */
 public final class DERand1Particle extends RandomInitializer<PSOState<double[]>> implements Particle<double[],ContinuousProblem,PSOState<double[]>> {
     private final double F;
     private final double CR;

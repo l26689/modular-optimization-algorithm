@@ -10,6 +10,21 @@ import moa.framework.api.TerminationCondition;
 import moa.framework.engine.OptimizationAlgorithm;
 import moa.framework.problem.Problem;
 
+/**
+ * 遗传算法主引擎 —— 通过 TotalPopOperator 编排种群演化。
+ *
+ * <p>继承 OptimizationAlgorithm<X, Prob, BasicGAState<X>>。是否为最终类：是。
+ *
+ * <p>GA 的搜索操作全部委托给 TotalPopOperator（内部封装 Selection->Crossover->Mutation->Replacement 管线），引擎仅负责种群初始化、数组交换和终止检查。
+ *
+ * <p><b>提示</b>
+ * <ul>
+ *   <li>可复现 —— 持有 Random 实例，通过构造函数统一注入所有组件。</li>
+ *   <li>组装说明 —— 构造函数接受初始化器数组、TotalPopOperator 和终止条件。</li>
+ * </ul>
+ *
+ * <p><b>参见文档 2、6</b>
+ */
 public final class BasicGA<X,Prob extends Problem<X>> 
     extends OptimizationAlgorithm<X,Prob,BasicGAState<X>> {
     Random random;

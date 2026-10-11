@@ -1,4 +1,4 @@
-package moa.metaServer;
+package moa.example.meta.server;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -115,7 +115,7 @@ public final class UserCodeCompiler {
             Object instance = cls.getDeclaredConstructor().newInstance();
             if (!(instance instanceof ObjectiveFunction)) {
                 throw new IllegalArgumentException(
-                        CLASS_NAME + " 没有实现 moa.metaServer.ObjectiveFunction 接口");
+                        CLASS_NAME + " 没有实现 moa.example.meta.server.ObjectiveFunction 接口");
             }
             return (ObjectiveFunction) instance;
         } catch (ReflectiveOperationException e) {

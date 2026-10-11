@@ -1,13 +1,14 @@
-package moa.metaServer;
+package moa.example.meta.server;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -79,12 +80,12 @@ public final class WebServer {
 
     private static void handleGet(HttpExchange ex, String path) throws IOException {
         switch (path) {
-            case "/" -> serveFile(ex, "web/index.html", "text/html");
-            case "/style.css" -> serveFile(ex, "web/style.css", "text/css");
-            case "/app.js" -> serveFile(ex, "web/app.js", "application/javascript");
+            case "/" -> serveFile(ex, "/web/index.html", "text/html");
+            case "/style.css" -> serveFile(ex, "/web/style.css", "text/css");
+            case "/app.js" -> serveFile(ex, "/web/app.js", "application/javascript");
             case "/api/presets" -> sendJson(ex, 200, presetsJson());
             case "/api/templates" -> sendJson(ex, 200, templatesJson());
-            default -> serveFile(ex, "web" + path, contentType(path));
+            default -> serveFile(ex, "/web" + path, contentType(path));
         }
     }
 
@@ -324,17 +325,17 @@ public final class WebServer {
         return "text/html";
     }
 
-    private static void serveFile(HttpExchange ex, String path, String contentType) throws IOException {
-        byte[] bytes;
-        try {
-            bytes = Files.readAllBytes(Paths.get(path));
-        } catch (IOException e) {
-            sendText(ex, 404, "Not Found: " + path);
-            return;
+    private static void serveFile(HttpExchange ex, String resourcePath, String contentType) throws IOException {
+        try (InputStream in = WebServer.class.getResourceAsStream(resourcePath)) {
+            if (in == null) {
+                sendText(ex, 404, "Not Found: " + resourcePath);
+                return;
+            }
+            byte[] bytes = in.readAllBytes();
+            ex.getResponseHeaders().set("Content-Type", contentType + "; charset=utf-8");
+            ex.sendResponseHeaders(200, bytes.length);
+            ex.getResponseBody().write(bytes);
         }
-        ex.getResponseHeaders().set("Content-Type", contentType + "; charset=utf-8");
-        ex.sendResponseHeaders(200, bytes.length);
-        ex.getResponseBody().write(bytes);
     }
 
     private static void sendJson(HttpExchange ex, int status, String json) throws IOException {

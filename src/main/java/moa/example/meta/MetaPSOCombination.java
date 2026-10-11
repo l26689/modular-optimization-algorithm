@@ -1,4 +1,4 @@
-package moa.meta;
+package moa.example.meta;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -31,7 +31,7 @@ import moa.problem.evaluate.AlgorithmEvaluationProblem;
  * <h3>运行</h3>
  * <pre>
  *   mvn compile
- *   java -cp target/classes moa.meta.MetaPSOCombination
+ *   java -cp target/classes moa.example.meta.MetaPSOCombination
  * </pre>
  * 所有可调参数都在 {@link MetaPSOConfig} 里，改那个文件就够了。
  *

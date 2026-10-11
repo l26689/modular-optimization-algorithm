@@ -1,4 +1,4 @@
-package moa.metaServer;
+package moa.example.meta.server;
 
 import java.util.Random;
 
@@ -8,10 +8,10 @@ import moa.algorithm.pso.engine.ParticleSwarmOptimization;
 import moa.components.recorder.BestRecorder;
 import moa.components.terminator.MaxCallTerminationCondition;
 import moa.framework.engine.OptimizationAlgorithm;
-import moa.meta.BranchAlgorithmBuilder;
-import moa.meta.MetaPSOConfig;
-import moa.meta.ParameterSpaceProblem;
-import moa.meta.TransferPSOParticle;
+import moa.example.meta.BranchAlgorithmBuilder;
+import moa.example.meta.MetaPSOConfig;
+import moa.example.meta.ParameterSpaceProblem;
+import moa.example.meta.TransferPSOParticle;
 import moa.problem.continuous.ContinuousProblem;
 import moa.problem.evaluate.AlgorithmEvaluationProblem;
 
@@ -19,7 +19,7 @@ import moa.problem.evaluate.AlgorithmEvaluationProblem;
  * 元搜索门面：给定一个目标问题，用 {@code moa.meta} 的伪 PSO 跨算法搜索
  * 找出最优的「算法 + 参数组合」，并返回该组合真正求出的解。
  * <p>
- * 本类是 {@code moa.meta.MetaPSOCombination.main} 的<b>参数化版本</b>——逻辑照搬，
+ * 本类是 {@code moa.example.meta.MetaPSOCombination.main} 的<b>参数化版本</b>——逻辑照搬，
  * 只是把硬编码的 {@code SphereProblem} 换成调用方传入的 {@code target}。
  * 供 {@link WebServer} 的 {@code /api/search} 调用。
  */

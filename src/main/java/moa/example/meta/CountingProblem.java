@@ -1,4 +1,4 @@
-package moa.meta;
+package moa.example.meta;
 
 import moa.problem.continuous.ContinuousProblem;
 

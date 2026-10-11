@@ -2,6 +2,20 @@ package moa.components.state;
 
 import moa.framework.engine.State;
 
+/**
+ * 长生命周期状态实现 —— 通过替换引用实现零分配更新。
+ *
+ * <p>实现 State<X>。是否为最终类：是。
+ *
+ * <p>传入的数组引用被直接存储（不拷贝），调用方通过 set() 替换引用即可更新状态。适用于群体算法。
+ *
+ * <p><b>提示</b>
+ * <ul>
+ *   <li>安全性 —— 不进行防御性拷贝，数组内容为只读。组件不得保存 getCurrentXs() 返回的引用跨迭代使用。详见文档 5。</li>
+ * </ul>
+ *
+ * <p><b>参见文档 5</b>
+ */
 public class LongLifeState<X> implements State<X> {
     private X[] currentPositions;
 

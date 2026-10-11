@@ -1,5 +1,19 @@
 package moa.problem.continuous;
 
+/**
+ * Sphere 基准函数 —— 最简单的连续优化测试函数。
+ *
+ * <p>继承 ContinuousProblem。是否为最终类：是。
+ *
+ * <p>全局最优在 x = (0,...,0)，f(x) = 0。搜索范围为 [-100, 100]^n，单峰凸函数。
+ *
+ * <p><b>提示</b>
+ * <ul>
+ *   <li>纯函数 —— evaluate() 无副作用。</li>
+ * </ul>
+ *
+ * <p><b>参见文档 2</b>
+ */
 public final class SphereProblem extends ContinuousProblem {
 
     public SphereProblem(int dimension) {

@@ -30,6 +30,21 @@ import moa.framework.problem.Problem;
 import moa.framework.engine.State;
 import moa.framework.api.Recorder;
 import moa.framework.api.Reusable;
+/**
+ * 收敛曲线记录器 —— 记录优化过程中最优值的变化轨迹。
+ *
+ * <p>实现 Recorder<X, Prob:Problem<X> & Evaluable<X,?>, S:State<X>> 及 Reusable。是否为最终类：是。
+ *
+ * <p>支持多轮运行叠加、多算法对比、对数坐标和 JFreeChart 可视化。每次 record() 对当前最优解评估目标值，按指定间隔记录数据点。
+ *
+ * <p><b>提示</b>
+ * <ul>
+ *   <li>可复现 —— 实现 Reusable，reset() 清除当前运行数据。</li>
+ *   <li>性能 —— 涉及 JFreeChart 渲染，建议仅在分析阶段使用。</li>
+ * </ul>
+ *
+ * <p><b>参见文档 5</b>
+ */
 public class ConvergenceRecorder<X, Prob extends Problem<X> & Evaluable<X, ?>> implements Recorder<X, Prob, State<X>>, Reusable {
     private Prob prob;
     private String currentRunName;

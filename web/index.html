@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOA 元优化 —— 搜索最优算法组合</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>MOA 元优化</h1>
+    <p class="subtitle">自动搜索「算法 + 参数」的最优组合，寻找最优解</p>
+  </header>
+
+  <main>
+    <!-- ========== 问题配置区 ========== -->
+    <section class="card">
+      <h2>目标问题</h2>
+
+      <div class="type-switch" role="radiogroup">
+        <label class="type-option active" id="opt-preset">
+          <input type="radio" name="type" value="preset" checked>
+          <span>预设问题</span>
+        </label>
+        <label class="type-option" id="opt-code">
+          <input type="radio" name="type" value="code">
+          <span>粘贴代码</span>
+        </label>
+      </div>
+
+      <!-- 预设模式 -->
+      <div id="preset-panel" class="panel">
+        <div class="row">
+          <label>预设问题
+            <select id="preset-select"></select>
+          </label>
+          <label>维度（变量个数）
+            <input type="number" id="dimension-preset" min="1" max="1000" value="2">
+          </label>
+          <p class="hint" id="preset-bounds"></p>
+        </div>
+      </div>
+
+      <!-- 代码模式 -->
+      <div id="code-panel" class="panel hidden">
+        <div class="row">
+          <label>维度
+            <input type="number" id="dimension-code" min="1" max="1000" value="2">
+          </label>
+          <label>下界
+            <input type="number" id="lower" value="-100" step="any">
+          </label>
+          <label>上界
+            <input type="number" id="upper" value="100" step="any">
+          </label>
+        </div>
+        <label class="block">从模板填充
+          <select id="template-select">
+            <option value="">—— 选择一个模板 ——</option>
+          </select>
+        </label>
+        <label class="block">Java 代码（类名 UserObjective，实现 moa.metaServer.ObjectiveFunction，不要写 package）
+          <textarea id="code" rows="14" spellcheck="false"
+            placeholder="import moa.metaServer.ObjectiveFunction;&#10;&#10;public class UserObjective implements ObjectiveFunction {&#10;    @Override&#10;    public double evaluate(double[] x) {&#10;        // 返回成本，越小越优&#10;    }&#10;}"></textarea>
+        </label>
+        <p class="hint">要求：<code>evaluate</code> 必须是纯函数（相同输入相同输出），不能有 Math.random() 等。</p>
+      </div>
+
+      <div class="row">
+        <label>内层评估次数预算（解目标问题时的算力）
+          <input type="number" id="innerBudget" min="1" max="1000000" value="10000">
+        </label>
+      </div>
+    </section>
+
+    <!-- ========== 元搜索配置区 ========== -->
+    <section class="card">
+      <h2>元搜索参数</h2>
+      <div class="row">
+        <label>元搜索轮数
+          <input type="number" id="metaIterations" min="1" max="5000" value="100">
+        </label>
+        <label>粒子数（群规模）
+          <input type="number" id="swarmSize" min="1" max="100" value="50">
+        </label>
+      </div>
+      <p class="hint">外层用「伪 PSO」在算法配置空间里搜索，粒子可在 SA / PSO / DE 三种算法之间跳槽。</p>
+    </section>
+
+    <button id="search-btn">开始搜索</button>
+    <p id="status" class="status"></p>
+
+    <!-- ========== 结果区 ========== -->
+    <section id="result" class="card hidden">
+      <h2>结果</h2>
+
+      <div id="error-box" class="error hidden"></div>
+
+      <div class="result-grid">
+        <div class="result-block">
+          <h3>最优算法组合</h3>
+          <p class="branch-name" id="branch"></p>
+          <table id="coord-table">
+            <thead><tr><th>参数</th><th>取值</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="result-block">
+          <h3>该组合找到的解</h3>
+          <pre id="best-x"></pre>
+          <p class="stat">平均表现：<span id="avg-cost"></span></p>
+          <p class="stat" id="best-x-desc"></p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <span>评估了 <b id="evals"></b> 个不同配置</span>
+        <span>耗时 <b id="elapsed"></b></span>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-package moa.metaServer;
+package moa.example.meta.server;
 
 import java.util.List;
 
@@ -34,7 +34,7 @@ public final class CodeTemplates {
                 "Sphere（平方和）",
                 "各分量平方求和，全局最优在原点，最简单连续问题",
                 """
-                import moa.metaServer.ObjectiveFunction;
+                import moa.example.meta.server.ObjectiveFunction;
 
                 public class UserObjective implements ObjectiveFunction {
                     @Override
@@ -55,7 +55,7 @@ public final class CodeTemplates {
                 "Rastrigin（多峰）",
                 "带余弦调制的多峰函数，全局最优在原点，适合看算法逃出局部最优的能力",
                 """
-                import moa.metaServer.ObjectiveFunction;
+                import moa.example.meta.server.ObjectiveFunction;
 
                 public class UserObjective implements ObjectiveFunction {
                     @Override
@@ -76,7 +76,7 @@ public final class CodeTemplates {
                 "排列（random-key）",
                 "把连续解排序取秩得到一个排列，用相邻元素编号差平方和当成本；演示 describe 的重写",
                 """
-                import moa.metaServer.ObjectiveFunction;
+                import moa.example.meta.server.ObjectiveFunction;
                 import java.util.Arrays;
 
                 public class UserObjective implements ObjectiveFunction {

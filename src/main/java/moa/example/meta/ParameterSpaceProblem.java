@@ -1,4 +1,4 @@
-package moa.meta;
+package moa.example.meta;
 
 import java.util.HashMap;
 import java.util.Map;

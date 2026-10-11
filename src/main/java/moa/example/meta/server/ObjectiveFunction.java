@@ -1,4 +1,4 @@
-package moa.metaServer;
+package moa.example.meta.server;
 
 /**
  * 目标函数契约：用户粘贴的 Java 代码要实现这个接口。

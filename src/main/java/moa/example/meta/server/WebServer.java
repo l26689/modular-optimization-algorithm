@@ -7,8 +7,6 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +32,7 @@ import moa.problem.continuous.SphereProblem;
  *   <li><b>只绑定 127.0.0.1</b>——服务能让任意访问者触发大量 CPU 计算，绝不能暴露到局域网。</li>
  * </ul>
  * <p>
- * 运行：先 {@code mvn compile}，再 {@code java -cp target/classes moa.metaServer.WebServer [端口]}，
+ * 运行：先 {@code mvn compile}，再 {@code java -cp target/classes moa.example.meta.server [端口]}，
  * 默认 8080。浏览器打开 {@code http://127.0.0.1:8080}。
  */
 public final class WebServer {

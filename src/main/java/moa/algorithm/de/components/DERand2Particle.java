@@ -6,6 +6,7 @@ import moa.problem.continuous.ContinuousProblem;
 import moa.algorithm.pso.api.PSOState;
 import moa.algorithm.pso.api.Particle;
 import moa.problem.continuous.components.RandomInitializer;
+import moa.framework.problem.Comparision;
 
 /**
  * DE/rand/2 变异粒子 —— 使用两对差分向量的高探索策略。
@@ -97,7 +98,7 @@ public final class DERand2Particle extends RandomInitializer<PSOState<double[]>>
             }
         }
 
-        if (problem.compare(trial, currentPosition) > 0) {
+        if (problem.compare(trial, currentPosition).relation == Comparision.Relation.GREATER) {
             currentPosition = trial;
         }
         return problem.copyX(currentPosition);

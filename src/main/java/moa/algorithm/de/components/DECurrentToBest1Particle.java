@@ -6,6 +6,7 @@ import moa.problem.continuous.ContinuousProblem;
 import moa.algorithm.pso.api.PSOState;
 import moa.algorithm.pso.api.Particle;
 import moa.problem.continuous.components.RandomInitializer;
+import moa.framework.problem.Comparision;
 
 /**
  * DE/current-to-best/1 变异粒子 —— 结合当前个体与最优个体的方向信息。
@@ -54,7 +55,7 @@ public final class DECurrentToBest1Particle extends RandomInitializer<PSOState<d
 
         int bestIdx = 0;
         for (int i = 1; i < popSize; i++) {
-            if (problem.compare(currentXs[i], currentXs[bestIdx]) > 0) {
+            if (problem.compare(currentXs[i], currentXs[bestIdx]).relation == Comparision.Relation.GREATER) {
                 bestIdx = i;
             }
         }
@@ -86,7 +87,7 @@ public final class DECurrentToBest1Particle extends RandomInitializer<PSOState<d
             }
         }
 
-        if (problem.compare(trial, currentPosition) > 0) {
+        if (problem.compare(trial, currentPosition).relation == Comparision.Relation.GREATER) {
             currentPosition = trial;
         }
         return problem.copyX(currentPosition);

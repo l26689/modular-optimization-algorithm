@@ -44,11 +44,13 @@ public interface Problem<X> {
      *
      * <h3>返回值约定</h3>
      * <ul>
-     *   <li><b>正值</b>（{@code > 0}）——表示 {@code evaluate(x1)} 优于 {@code evaluate(x2)}（记为 {@code y1 > y2}）</li>
-     *   <li><b>负值</b>（{@code < 0}）——表示 {@code evaluate(x1)} 劣于 {@code evaluate(x2)}（记为 {@code y1 < y2}）</li>
-     *   <li><b>零</b>（{@code = 0}）——表示两者等优 <b>或</b> 无法比较（无支配关系）。
-     *       本方法仅定义<b>偏序关系</b>（partial order），不要求全序（total order）：
-     *       两个解可能互不支配，此时返回零是合法的</li>
+     *   <li>{@link Comparision#relation} 表示 {@code x1} 与 {@code x2} 的比较结果
+     * 其中 {@link Comparision#Relation#LESS} 表示 {@code x1} 劣于 {@code x2}，
+     *      {@link Comparision#Relation#GREATER} 表示 {@code x1} 优于 {@code x2}，
+     *      {@link Comparision#Relation#EQUAL} 表示两者等优。
+     *      {@link Comparision#Relation#UNCOMPARABLE} 表示无法比较（无支配关系）。
+     *      本方法仅定义<b>偏序关系</b>（partial order），不要求全序（total order）：
+     *   <li>{@link Comparision#gap} 表示 {@code x1} 与 {@code x2} 的目标值差值大小绝对值。
      * </ul>
      * 返回值的 <b>绝对值</b> 表示优劣差距的大小：
      * 绝对值越大，两个解的质量差距越显著。
@@ -69,5 +71,21 @@ public interface Problem<X> {
      * @return 正值表示 {@code evaluate(x1)} 优于 {@code evaluate(x2)}；负值表示 {@code evaluate(x1)} 劣于 {@code evaluate(x2)}；
      *         零表示两者等优或无法比较（无支配关系）；绝对值表示优劣差距大小
      */
-    double compare(X x1, X x2);
+    Comparision compare(X x1, X x2);
+    /**
+     * 比较结果封装类，包含比较结果和优劣差距大小。
+     * <p>
+     * 本类用于封装 {@link #compare(X, X)} 方法的返回值，
+     * 有两个字段：{@link #relation} 和 {@link #gap}。
+     * relation 表示 {@code x1} 与 {@code x2} 的比较结果，
+     * gap 表示 {@code x1} 与 {@code x2} 的目标值差值大小绝对值。
+     * <p>
+     * relation的取值范围为 {@link Relation}，
+     * 其中 {@link Relation#LESS} 表示 {@code x1} 劣于 {@code x2}、
+     *      {@link Relation#GREATER} 表示 {@code x1} 优于 {@code x2}、
+     *      {@link Relation#EQUAL} 表示两者等优。
+     *      {@link Relation#UNCOMPARABLE} 表示无法比较（无支配关系）。
+     * 当relation为EQUAL或UNCOMPARABLE时，gap无意义，请勿依赖；
+     * 提供更丰富的比较信息。
+     */
 }

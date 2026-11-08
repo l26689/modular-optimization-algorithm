@@ -6,6 +6,8 @@ import moa.problem.continuous.ContinuousProblem;
 import moa.algorithm.pso.api.PSOState;
 import moa.algorithm.pso.api.Particle;
 import moa.problem.continuous.components.RandomInitializer;
+import moa.framework.problem.Comparision;
+
 
 /**
  * 差分进化粒子基类 —— 将 DE 变异视为 PSO 粒子行为。
@@ -102,7 +104,7 @@ public final class DEParticle extends RandomInitializer<PSOState<double[]>> impl
                 newPosition[i] = v[i];
             }
         }
-        if(problem.compare(newPosition, currentPosition)>0) {
+        if(problem.compare(newPosition, currentPosition).relation == Comparision.Relation.GREATER) {
             currentPosition = newPosition;
         }
         return problem.copyX(currentPosition);

@@ -6,6 +6,7 @@ import moa.problem.continuous.ContinuousProblem;
 import moa.algorithm.pso.api.PSOState;
 import moa.algorithm.pso.api.Particle;
 import moa.problem.continuous.components.RandomInitializer;
+import moa.framework.problem.Comparision;
 
 /**
  * DE/best/1 变异粒子 —— 变异基向量来自当前最优个体。
@@ -54,7 +55,7 @@ public final class DEBest1Particle extends RandomInitializer<PSOState<double[]>>
 
         int bestIdx = 0;
         for (int i = 1; i < popSize; i++) {
-            if (problem.compare(currentXs[i], currentXs[bestIdx]) > 0) {
+            if (problem.compare(currentXs[i], currentXs[bestIdx]).relation == Comparision.Relation.GREATER) {
                 bestIdx = i;
             }
         }
@@ -86,7 +87,7 @@ public final class DEBest1Particle extends RandomInitializer<PSOState<double[]>>
             }
         }
 
-        if (problem.compare(trial, currentPosition) > 0) {
+        if (problem.compare(trial, currentPosition).relation == Comparision.Relation.GREATER) {
             currentPosition = trial;
         }
         return problem.copyX(currentPosition);

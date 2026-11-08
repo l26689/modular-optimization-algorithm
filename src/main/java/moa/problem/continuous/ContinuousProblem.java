@@ -1,5 +1,6 @@
 package moa.problem.continuous;
 
+import moa.framework.problem.Comparision;
 import moa.framework.problem.Evaluable;
 import moa.framework.problem.Problem;
 
@@ -40,7 +41,15 @@ public abstract class ContinuousProblem implements Problem<double[]>,Evaluable<d
         return bounds;
     }
     @Override
-    public double compare(double[] x1, double[] x2){
-        return evaluate(x2) - evaluate(x1);
+    public Comparision compare(double[] x1, double[] x2){
+        double v1 = evaluate(x1);
+        double v2 = evaluate(x2);
+        if (v1 < v2) {
+            return new Comparision(Comparision.Relation.LESS, v2 - v1);
+        }
+        else if (v1 > v2) {
+            return new Comparision(Comparision.Relation.GREATER, v1 - v2);
+        }
+        return new Comparision(Comparision.Relation.EQUAL, 0.0);
     }
 }

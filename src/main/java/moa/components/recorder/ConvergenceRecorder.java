@@ -24,7 +24,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-
+import moa.framework.problem.Comparision;
 import moa.framework.problem.Evaluable;
 import moa.framework.problem.Problem;
 import moa.framework.engine.State;
@@ -106,12 +106,12 @@ public class ConvergenceRecorder<X, Prob extends Problem<X> & Evaluable<X, ?>> i
             if (x == null) {
                 continue;
             }
-            if (localBest == null || prob.compare(x, localBest) > 0) {
+            if (localBest == null || prob.compare(x, localBest).relation == Comparision.Relation.GREATER) {
                 localBest = x;
             }
         }
         if (localBest != null) {
-            if (bestX == null || prob.compare(localBest, bestX) > 0) {
+            if (bestX == null || prob.compare(localBest, bestX).relation == Comparision.Relation.GREATER) {
                 bestX = prob.copyX(localBest);
             }
         }

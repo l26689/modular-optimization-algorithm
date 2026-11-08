@@ -4,6 +4,7 @@ import java.util.Random;
 
 import moa.components.recorder.BestRecorder;
 import moa.framework.engine.OptimizationAlgorithm;
+import moa.framework.problem.Comparision;
 import moa.framework.problem.Evaluable;
 import moa.framework.problem.Problem;
 
@@ -58,9 +59,15 @@ public class AlgorithmEvaluationProblem<X, Prob extends Problem<X> & Evaluable<X
     }
 
     @Override
-    public double compare(AlgorithmBuilder<X, Prob> b1, AlgorithmBuilder<X, Prob> b2) {
+    public Comparision compare(AlgorithmBuilder<X, Prob> b1, AlgorithmBuilder<X, Prob> b2) {
         double v1 = evaluate(b1);
         double v2 = evaluate(b2);
-        return v2 - v1;
+        if (v1 < v2) {
+            return new Comparision(Comparision.Relation.LESS, v2 - v1);
+        }
+        else if (v1 > v2) {
+            return new Comparision(Comparision.Relation.GREATER, v1 - v2);
+        }
+        return new Comparision(Comparision.Relation.EQUAL, 0.0);
     }
 }

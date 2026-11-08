@@ -5,6 +5,7 @@ import java.util.Random;
 import moa.framework.problem.Problem;
 import moa.framework.api.Recorder;
 import moa.framework.engine.State;
+import moa.framework.problem.Comparision;
 
 /**
  * 历史最优解记录器，在每次 {@link #record(State)} 调用中自动维护全局最优解。
@@ -13,7 +14,10 @@ import moa.framework.engine.State;
  * {@link Problem#compare(Object, Object)} 比较优劣，保留历史最优解。
  * 同时适用于单解算法（SA）和群体算法（PSO）：对于 SA，数组仅含一个元素，
  * 每次迭代与历史最优比较；对于 PSO，遍历所有粒子位置，保留全局最优。
- *
+ * 注意，在多目标优化中，最优解可能不是唯一的，本类仅记录一个最优解。
+ * 请在使用时注意。
+ * <p>
+ * *
  * <h3>生命周期</h3>
  * <ol>
  *   <li>构造：无参构造，不绑定任何 Problem</li>
@@ -48,7 +52,7 @@ public class BestRecorder<X> implements Recorder<X,Problem<X>,State<X>> {
     public void record(State<X> state) {
         X[] currentXs = state.getCurrentXs();
         for(X x : currentXs) {
-            if (bestX == null || prob.compare(x, bestX) >= 0) {
+            if (bestX == null || prob.compare(x, bestX).relation == Comparision.Relation.GREATER) {
                 bestX = prob.copyX(x);
             }
         }

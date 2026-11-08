@@ -90,6 +90,10 @@ public final class ParameterSpaceProblem extends ContinuousProblem {
         }
 
         cache.put(key, value);
+        int n = cache.size();
+        if (n % 10 == 1 || n <= 5) {
+            System.out.printf("[元搜索] 已测试 %4d 个不同配置，当前得分 %.4f%n", n, value);
+        }
         return value;
     }
 

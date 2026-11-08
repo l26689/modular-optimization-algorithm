@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import moa.framework.problem.Comparision;
 import moa.framework.problem.Evaluable;
 import moa.framework.problem.Problem;
 
@@ -113,37 +114,19 @@ public final class DeploymentProblem implements Problem<int[]>, Evaluable<int[],
      * 基于 Pareto 支配的偏序比较。
      */
     @Override
-    public double compare(int[] x1, int[] x2) {
-        double[] obj1 = evaluate(x1);
-        double[] obj2 = evaluate(x2);
-        return dominanceDistance(obj1, obj2);
-    }
-
-    /**
-     * 计算 Pareto 支配距离。
-     *
-     * <p>
-     * 支配定义：x1 支配 x2 当且仅当：
-     * <ul>
-     *   <li>x1 在所有目标上都不劣于 x2（≥）</li>
-     *   <li>x1 在至少一个目标上严格优于 x2（>）</li>
-     * </ul>
-     * 若 x1 支配 x2，返回所有目标上优势之和（正值）；
-     * 若 x2 支配 x1，返回所有目标上劣势之和（负值）；
-     * 若互不支配，返回 0。
-     */
-    private static double dominanceDistance(double[] obj1, double[] obj2) {
+    public Comparision compare(int[] x1, int[] x2) {
         boolean x1Better = false;
         boolean x2Better = false;
         double sum = 0;
-        for (int i = 0; i < obj1.length; i++) {
-            sum += obj1[i] - obj2[i];
-            if (obj1[i] > obj2[i]) x1Better = true;
-            if (obj2[i] > obj1[i]) x2Better = true;
+        for (int i = 0; i < x1.length; i++) {
+            sum += x1[i] - x2[i];
+            if (x1[i] > x2[i]) x1Better = true;
+            if (x2[i] > x1[i]) x2Better = true;
         }
-        if (x1Better && !x2Better) return sum;
-        if (x2Better && !x1Better) return sum;
-        return 0;
+        if (x1Better && !x2Better) return new Comparision(Comparision.Relation.GREATER, sum);
+        if (x2Better && !x1Better) return new Comparision(Comparision.Relation.LESS, sum);
+        if (x1Better && x2Better) return new Comparision(Comparision.Relation.UNCOMPARABLE, 0);
+        return new Comparision(Comparision.Relation.EQUAL, 0);
     }
 
     /**

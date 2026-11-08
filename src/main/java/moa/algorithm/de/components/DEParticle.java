@@ -6,6 +6,8 @@ import moa.problem.continuous.ContinuousProblem;
 import moa.algorithm.pso.api.PSOState;
 import moa.algorithm.pso.api.Particle;
 import moa.problem.continuous.components.RandomInitializer;
+import moa.framework.problem.Comparision;
+
 
 public final class DEParticle extends RandomInitializer<PSOState<double[]>> implements Particle<double[],ContinuousProblem,PSOState<double[]>> {
     private final double F;
@@ -88,7 +90,7 @@ public final class DEParticle extends RandomInitializer<PSOState<double[]>> impl
                 newPosition[i] = v[i];
             }
         }
-        if(problem.compare(newPosition, currentPosition)>0) {
+        if(problem.compare(newPosition, currentPosition).relation == Comparision.Relation.GREATER) {
             currentPosition = newPosition;
         }
         return problem.copyX(currentPosition);

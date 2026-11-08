@@ -10,6 +10,7 @@ import moa.framework.problem.Problem;
 import moa.algorithm.sa.api.SACoolingSchedule;
 import moa.algorithm.sa.api.SAInitializer;
 import moa.algorithm.sa.api.SAState;
+import moa.framework.problem.Comparision;
 
 /**
  * 模块化模拟退火算法的主协调器。
@@ -254,8 +255,16 @@ public final class BasicSA<X,Prob extends Problem<X>> extends OptimizationAlgori
         while (!terminationCondition.check(state)) {
 
             newX = perturbation.search(state);
+            
+            Comparision comp = problem.compare(newX,currentX);
+            isAccepted = switch(comp.relation){
+                case LESS -> random.nextDouble()<Math.exp(comp.gap/temperature);
+                case GREATER -> true;
+                case EQUAL -> false;
+                case UNCOMPARABLE -> true;
+                default -> throw new IllegalArgumentException("Unknown relation: " + comp.relation);
+            };
 
-            isAccepted = random.nextDouble()<Math.exp(problem.compare(newX,currentX)/temperature);
             if(isAccepted){
                 currentX = newX;
             }

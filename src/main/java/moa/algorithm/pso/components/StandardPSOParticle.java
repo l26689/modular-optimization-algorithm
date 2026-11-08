@@ -5,6 +5,7 @@ import java.util.Random;
 import moa.problem.continuous.ContinuousProblem;
 import moa.algorithm.pso.api.PSOState;
 import moa.algorithm.pso.api.Particle;
+import moa.framework.problem.Comparision;
 
 /**
  * 标准 PSO 粒子，针对 {@link ContinuousProblem} 的经典实现。
@@ -166,7 +167,7 @@ public final class StandardPSOParticle
             }
         }
 
-        if (problem.compare(position, pBest) > 0) {
+        if (problem.compare(position, pBest).relation == Comparision.Relation.GREATER) {
             this.pBest = problem.copyX(position);
         }
 
@@ -187,7 +188,7 @@ public final class StandardPSOParticle
         double[][] positions = state.getCurrentXs();
         double[] best = positions[0];
         for (int i = 1; i < positions.length; i++) {
-            if (problem.compare(positions[i], best) > 0) {
+            if (problem.compare(positions[i], best).relation == Comparision.Relation.GREATER) {
                 best = positions[i];
             }
         }

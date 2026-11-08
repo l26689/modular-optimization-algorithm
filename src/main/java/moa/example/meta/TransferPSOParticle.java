@@ -6,6 +6,9 @@ import java.util.Random;
 import moa.algorithm.pso.api.PSOState;
 import moa.algorithm.pso.api.Particle;
 
+import moa.framework.problem.Comparision;
+
+
 /**
  * 带"跳槽"机制的 PSO 粒子——本项目的核心机制就在这里。
  * <p>
@@ -136,7 +139,7 @@ public final class TransferPSOParticle
         double pJump = jumpProbability(state, currentPerf);
         if (random.nextDouble() < pJump) {
             jump();
-        } else if (problem.compare(position, pBest) > 0) {
+        } else if (problem.compare(position, pBest).relation == Comparision.Relation.GREATER) {
             // 没跳槽就正常更新个体历史最优
             pBest = problem.copyX(position);
             pBestPerf = currentPerf;
@@ -258,7 +261,7 @@ public final class TransferPSOParticle
         double[][] positions = state.getCurrentXs();
         double[] best = positions[0];
         for (int i = 1; i < positions.length; i++) {
-            if (problem.compare(positions[i], best) > 0) {
+            if (problem.compare(positions[i], best).relation == Comparision.Relation.GREATER) {
                 best = positions[i];
             }
         }

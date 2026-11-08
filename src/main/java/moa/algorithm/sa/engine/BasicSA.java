@@ -257,10 +257,15 @@ public final class BasicSA<X,Prob extends Problem<X>> extends OptimizationAlgori
             newX = perturbation.search(state);
             
             Comparision comp = problem.compare(newX,currentX);
+            // Metropolis 准则：接受概率 = exp(-Δ/T)，Δ 为劣化量（≥0）。
+            // comp.gap 是目标值差的【绝对值】（见 Problem#compare 约定），
+            // 所以劣解必须取负号才能让概率 ≤ 1；漏掉负号会导致 exp(正) > 1，
+            // 劣解被无条件接受，SA 退化成随机游走。
             isAccepted = switch(comp.relation){
-                case LESS -> random.nextDouble()<Math.exp(comp.gap/temperature);
+                case LESS -> random.nextDouble() < Math.exp(-comp.gap / temperature);
                 case GREATER -> true;
-                case EQUAL -> false;
+                // 等优解应当接受：允许解在平台上自由漂移，避免停在原地。
+                case EQUAL -> true;
                 case UNCOMPARABLE -> true;
                 default -> throw new IllegalArgumentException("Unknown relation: " + comp.relation);
             };

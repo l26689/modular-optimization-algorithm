@@ -112,19 +112,32 @@ public final class DeploymentProblem implements Problem<int[]>, Evaluable<int[],
 
     /**
      * 基于 Pareto 支配的偏序比较。
+     * <p>
+     * 必须比较 {@link #evaluate(int[])} 返回的<b>目标值向量</b>，而不是解
+     * {@code actionIds} 本身——后者是设备的 actionId，其数值大小没有任何优化含义
+     * （直接比 actionId 等于放弃多目标评估，连带让 evaluate 的 LRU 缓存失效）。
+     * <p>
+     * 支配判定：x1 在所有目标上不劣于 x2，且至少一个目标严格优于 x2。
+     * {@code gap} 按 {@link moa.framework.problem.Problem#compare} 的约定返回
+     * 目标值差的<b>绝对值</b>，供模拟退火的 Metropolis 准则使用。
      */
     @Override
     public Comparision compare(int[] x1, int[] x2) {
+        double[] obj1 = evaluate(x1);
+        double[] obj2 = evaluate(x2);
+
         boolean x1Better = false;
         boolean x2Better = false;
         double sum = 0;
-        for (int i = 0; i < x1.length; i++) {
-            sum += x1[i] - x2[i];
-            if (x1[i] > x2[i]) x1Better = true;
-            if (x2[i] > x1[i]) x2Better = true;
+        for (int i = 0; i < obj1.length; i++) {
+            sum += obj1[i] - obj2[i];
+            if (obj1[i] > obj2[i]) x1Better = true;
+            if (obj2[i] > obj1[i]) x2Better = true;
         }
-        if (x1Better && !x2Better) return new Comparision(Comparision.Relation.GREATER, sum);
-        if (x2Better && !x1Better) return new Comparision(Comparision.Relation.LESS, sum);
+
+        double gap = Math.abs(sum);
+        if (x1Better && !x2Better) return new Comparision(Comparision.Relation.GREATER, gap);
+        if (x2Better && !x1Better) return new Comparision(Comparision.Relation.LESS, gap);
         if (x1Better && x2Better) return new Comparision(Comparision.Relation.UNCOMPARABLE, 0);
         return new Comparision(Comparision.Relation.EQUAL, 0);
     }

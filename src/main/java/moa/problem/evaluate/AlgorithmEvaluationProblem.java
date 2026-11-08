@@ -44,15 +44,23 @@ public class AlgorithmEvaluationProblem<X, Prob extends Problem<X> & Evaluable<X
         return x;
     }
 
+    /**
+     * 比较两个待评估的算法配置。
+     * <p>
+     * 语义与 {@link moa.problem.continuous.ContinuousProblem#compare} 保持一致：
+     * {@code GREATER} = b1 更优（平均表现更小），{@code LESS} = b1 更劣。
+     * 这个方向必须和 BestRecorder / StandardPSOParticle / DEParticle 等调用方一致，
+     * 否则整个搜索会去追"最差"的配置。
+     */
     @Override
     public Comparision compare(AlgorithmBuilder<X, Prob> b1, AlgorithmBuilder<X, Prob> b2) {
         double v1 = evaluate(b1);
         double v2 = evaluate(b2);
         if (v1 < v2) {
-            return new Comparision(Comparision.Relation.LESS, v2 - v1);
+            return new Comparision(Comparision.Relation.GREATER, v2 - v1);
         }
         else if (v1 > v2) {
-            return new Comparision(Comparision.Relation.GREATER, v1 - v2);
+            return new Comparision(Comparision.Relation.LESS, v1 - v2);
         }
         return new Comparision(Comparision.Relation.EQUAL, 0.0);
     }
